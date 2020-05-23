@@ -1,6 +1,0 @@
-anguage: go
-
-go:
-  - "1.14"
-
-script: go get github.com/fsgo/fscache && go test -race ./...

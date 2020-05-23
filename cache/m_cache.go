@@ -30,6 +30,16 @@ type MGetResult map[interface{}]GetResult
 // MSetResult 批量设置MSet接口的结果
 type MSetResult map[interface{}]SetResult
 
+// HasError 是否有异常
+func (mr MSetResult) HasError() bool {
+	for _, ret := range mr {
+		if err := ret.Err(); err != nil {
+			return true
+		}
+	}
+	return false
+}
+
 // MDeleteResult 批量删除MDelete接口的结果
 type MDeleteResult map[interface{}]DeleteResult
 
@@ -46,10 +56,10 @@ func (md MDeleteResult) Num() int {
 type MHasResult map[interface{}]HasResult
 
 // NewMCacheBySCache 创建一个MCacheBySCache实例
-func NewMCacheBySCache(sCache ISCache,concurrent bool) IMCache {
+func NewMCacheBySCache(sCache ISCache, concurrent bool) IMCache {
 	return &mCacheBySCache{
-		sCache: sCache,
-		concurrent:concurrent,
+		sCache:     sCache,
+		concurrent: concurrent,
 	}
 }
 
@@ -166,10 +176,10 @@ func (m *mCacheBySCache) MHas(ctx context.Context, keys []interface{}) MHasResul
 	return result
 }
 
-func (m *mCacheBySCache) runFn(fn func()){
+func (m *mCacheBySCache) runFn(fn func()) {
 	if m.concurrent {
 		go fn()
-	}else{
+	} else {
 		fn()
 	}
 }

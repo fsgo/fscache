@@ -8,8 +8,9 @@ package cache
 
 import (
 	"context"
-	"time"
 	"errors"
+	"fmt"
+	"time"
 )
 
 // ISCache 普通的单个缓存
@@ -67,6 +68,10 @@ func (g *getResult) Err() error {
 	return g.err
 }
 
+func (g *getResult) String() string {
+	return fmt.Sprintf("err=%v; val=%q; unmarshaler=%v", g.err, g.val, g.unmarshaler)
+}
+
 func (g *getResult) Value(obj interface{}) (has bool, err error) {
 	if g.err == ErrNotExists {
 		return false, nil
@@ -74,11 +79,11 @@ func (g *getResult) Value(obj interface{}) (has bool, err error) {
 	if g.err != nil {
 		return false, g.err
 	}
-	
-	if g.unmarshaler==nil{
-		return false,errors.New("unmarshaler is nil")
+
+	if g.unmarshaler == nil {
+		return false, errors.New("unmarshaler is nil")
 	}
-	
+
 	err = g.unmarshaler(g.val, obj)
 	if err == nil {
 		return true, nil
