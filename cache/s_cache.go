@@ -19,6 +19,9 @@ type ISCache interface {
 	Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) SetResult
 	Has(ctx context.Context, key interface{}) HasResult
 	Delete(ctx context.Context, key interface{}) DeleteResult
+
+	// 缓存数据重置
+	Reset(ctx context.Context) error
 }
 
 // Unmarshaler 数据反序列化方法

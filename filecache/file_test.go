@@ -19,5 +19,5 @@ func TestNew(t *testing.T) {
 	if err != nil {
 		t.Fatalf("new cache with error:%v", err)
 	}
-	cachetest.TestCache(t, c, "fileCache")
+	cachetest.CacheTest(t, c, "fileCache")
 }

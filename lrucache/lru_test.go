@@ -17,14 +17,11 @@ import (
 func TestLRUCache(t *testing.T) {
 	c, _ := New(1000)
 
-	cachetest.TestCache(t, c, "lruCache")
+	cachetest.CacheTest(t, c, "lruCache")
 }
 
 func TestLRUCache2(t *testing.T) {
-	sc := &SCache{
-		capacity: 10,
-	}
-	sc.Reset()
+	sc, _ := NewSCache(10)
 
 	for i := 0; i < 12; i++ {
 		ret := sc.Set(context.Background(), i, i, 1*time.Hour)

@@ -13,9 +13,12 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/fsgo/fscache/cache"
 )
+
+const cacheFileExt = ".cache"
 
 // IOption filecache 选项接口
 type IOption interface {
@@ -26,13 +29,25 @@ type IOption interface {
 
 	// CachePath 缓存文件路径
 	CachePath(key interface{}) string
+
+	// AutoGcTime
+	AutoGcTime() time.Duration
 }
 
 // Option 配置选型
 type Option struct {
 	// Dir 缓存文件存储目录
-	Dir string
+	Dir    string
+	AutoGc time.Duration
 	cache.Option
+}
+
+// AutoGcTime 获取自动gc的最小间隔
+func (o Option) AutoGcTime() time.Duration {
+	if o.AutoGc == 0 {
+		return 300 * time.Second
+	}
+	return o.AutoGc
 }
 
 // CacheDir 缓存根目录
@@ -46,7 +61,7 @@ func (o Option) CachePath(key interface{}) string {
 	h.Write([]byte(fmt.Sprint(key)))
 	s := hex.EncodeToString(h.Sum(nil))
 	fp := filepath.Join(o.CacheDir(), s[:3], s[3:6], s[6:9], s[9:12], s[12:15], s[16:])
-	return strings.Join([]string{fp, ".cache"}, "")
+	return strings.Join([]string{fp, cacheFileExt}, "")
 }
 
 // Check 检查是否正确

@@ -17,11 +17,12 @@ import (
 	"github.com/fsgo/fscache/cache"
 )
 
+// NewSCache 创建普通(非批量)
 func NewSCache(capacity int) (cache.ISCache, error) {
 	sc := &SCache{
 		capacity: capacity,
 	}
-	sc.Reset()
+	sc.Reset(context.Background())
 	return sc, nil
 }
 
@@ -121,11 +122,12 @@ func (L *SCache) Delete(ctx context.Context, key interface{}) cache.DeleteResult
 }
 
 // Reset 重置、清空所有缓存
-func (L *SCache) Reset() {
+func (L *SCache) Reset(ctx context.Context) error {
 	L.lock.Lock()
 	defer L.lock.Unlock()
 	L.data = make(map[interface{}]*list.Element, L.capacity)
 	L.list = list.New()
+	return nil
 }
 
 var _ cache.ISCache = (*SCache)(nil)

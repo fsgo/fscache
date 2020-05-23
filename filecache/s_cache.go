@@ -11,10 +11,13 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/fsgo/fscache/cache"
@@ -30,12 +33,19 @@ func NewSCache(opt IOption) (cache.ISCache, error) {
 	}, nil
 }
 
+// SCache 普通(非批量)缓存
 type SCache struct {
-	opt IOption
+	opt    IOption
+	gcTime int64
+
+	gcRunning int32
 }
 
+// Get 获取
 func (f *SCache) Get(ctx context.Context, key interface{}) cache.GetResult {
-	expire, data, err := f.read(key, true)
+	defer f.autoGC()
+
+	expire, data, err := f.readByKey(key, true)
 	if err != nil {
 		return cache.NewGetResult(nil, err, nil)
 	}
@@ -47,7 +57,10 @@ func (f *SCache) Get(ctx context.Context, key interface{}) cache.GetResult {
 	return cache.NewGetResult(data, nil, f.opt.Unmarshaler())
 }
 
+// Set 写入
 func (f *SCache) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) cache.SetResult {
+	defer f.autoGC()
+
 	fp := f.opt.CachePath(key)
 	dir := filepath.Dir(fp)
 	if !fileExists(dir) {
@@ -90,8 +103,12 @@ func (f *SCache) Set(ctx context.Context, key interface{}, value interface{}, tt
 	return cache.NewSetResult(nil)
 }
 
-func (f *SCache) read(key interface{}, needData bool) (expire bool, data []byte, err error) {
+func (f *SCache) readByKey(key interface{}, needData bool) (expire bool, data []byte, err error) {
 	fp := f.opt.CachePath(key)
+	return f.readByPath(fp, needData)
+}
+
+func (f *SCache) readByPath(fp string, needData bool) (expire bool, data []byte, err error) {
 	if !fileExists(fp) {
 		return false, nil, cache.ErrNotExists
 	}
@@ -126,8 +143,11 @@ func (f *SCache) read(key interface{}, needData bool) (expire bool, data []byte,
 	return expire, data, err
 }
 
+// Has 判断是否存在
 func (f *SCache) Has(ctx context.Context, key interface{}) cache.HasResult {
-	expire, _, err := f.read(key, false)
+	defer f.autoGC()
+
+	expire, _, err := f.readByKey(key, false)
 	if err != nil {
 		return cache.NewHasResult(err, false)
 	}
@@ -137,10 +157,75 @@ func (f *SCache) Has(ctx context.Context, key interface{}) cache.HasResult {
 	return cache.NewHasResult(nil, false)
 }
 
+// Delete 删除
 func (f *SCache) Delete(ctx context.Context, key interface{}) cache.DeleteResult {
 	fp := f.opt.CachePath(key)
 	num, err := unlink(fp)
 	return cache.NewDeleteResult(err, num)
+}
+
+// Reset  重置
+func (f *SCache) Reset(ctx context.Context) error {
+	return filepath.Walk(f.opt.CacheDir(), func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() && strings.HasSuffix(info.Name(), cacheFileExt) {
+			err := os.Remove(path)
+			if err != nil {
+				log.Printf("[filecache][warn] remove %q failed, %s\n", path, err.Error())
+			}
+		}
+		return nil
+	})
+}
+
+func (f *SCache) autoGC() {
+	lastGc := atomic.LoadInt64(&f.gcTime)
+	if time.Now().UnixNano()-lastGc < int64(f.opt.AutoGcTime()) {
+		return
+	}
+
+	newVal := time.Now().UnixNano()
+	if !atomic.CompareAndSwapInt64(&f.gcTime, lastGc, newVal) {
+		return
+	}
+
+	go func() {
+		defer func() {
+			if re := recover(); re != nil {
+				log.Printf("[filecache][warn] autoGC panic:%v\n", re)
+			}
+		}()
+		f.gc()
+	}()
+
+}
+func (f *SCache) gc() {
+	if atomic.LoadInt32(&f.gcRunning) == 1 {
+		return
+	}
+	atomic.StoreInt32(&f.gcRunning, 1)
+	defer func() {
+		atomic.StoreInt32(&f.gcRunning, 0)
+	}()
+	filepath.Walk(f.opt.CacheDir(), func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			if err := f.checkFile(path); err != nil {
+				log.Printf("[filecache][warn] checkFile %q failed, %s\n", path, err.Error())
+			}
+		}
+		return nil
+	})
+}
+
+func (f *SCache) checkFile(fp string) error {
+	if strings.HasSuffix(fp, cacheFileExt) {
+		return nil
+	}
+	expire, _, _ := f.readByPath(fp, false)
+	if expire {
+		return os.Remove(fp)
+	}
+
+	return nil
 }
 
 var _ cache.ISCache = (*SCache)(nil)

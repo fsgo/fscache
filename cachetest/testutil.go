@@ -15,13 +15,14 @@ import (
 	"github.com/fsgo/fscache/cache"
 )
 
-// TestCache  测试缓存
-func TestCache(t *testing.T, c cache.ICache, prex string) {
-	TestSCache(t, c, prex+"_sCache")
-	TestMCache(t, c, prex+"_mCache")
+// CacheTest  测试缓存
+func CacheTest(t *testing.T, c cache.ICache, prex string) {
+	SCacheTest(t, c, prex+"_sCache")
+	MCacheTest(t, c, prex+"_mCache")
 }
 
-func TestSCache(t *testing.T, c cache.ISCache, prex string) {
+// SCacheTest 测试SCache
+func SCacheTest(t *testing.T, c cache.ISCache, prex string) {
 	kv := map[interface{}]interface{}{
 		123:   234,
 		234:   456,
@@ -114,9 +115,18 @@ func TestSCache(t *testing.T, c cache.ISCache, prex string) {
 			}
 		}
 	})
+
+	t.Run("Delete_miss", func(t *testing.T) {
+		delRet := c.Delete(context.Background(), "not_exists")
+		checkNoErr(t, delRet, "Delete_miss")
+		if num := delRet.Num(); num != 0 {
+			t.Errorf("Num=%d, want=0", num)
+		}
+	})
 }
 
-func TestMCache(t *testing.T, c cache.IMCache, prex string) {
+// MCacheTest 测试MCache
+func MCacheTest(t *testing.T, c cache.IMCache, prex string) {
 	kv := map[interface{}]interface{}{
 		12345:    234,
 		23456:    456,
