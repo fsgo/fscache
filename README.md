@@ -1,6 +1,10 @@
 # fscache
 
 
+[![Build Status](https://travis-ci.org/fsgo/fscache.png?branch=master)](https://travis-ci.org/fsgo/fscache)
+[![GoCover](http://gocover.io/_badge/github.com/fsgo/fscache)](http://gocover.io/github.com/fsgo/fscache)
+[![GoDoc](https://godoc.org/github.com/fsgo/fscache?status.svg)](https://godoc.org/github.com/fsgo/fscache)
+
 ## 1.缓存接口定义
 ```go
 // ICache 缓存API
