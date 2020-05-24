@@ -30,24 +30,26 @@ type IOption interface {
 	// CachePath 缓存文件路径
 	CachePath(key interface{}) string
 
-	// AutoGcTime
-	AutoGcTime() time.Duration
+	// GetGCInterval
+	GetGCInterval() time.Duration
 }
 
 // Option 配置选型
 type Option struct {
 	// Dir 缓存文件存储目录
-	Dir    string
-	AutoGc time.Duration
+	Dir string
+
+	// 触发过期缓存清理的间隔时间
+	GCInterval time.Duration
 	cache.Option
 }
 
-// AutoGcTime 获取自动gc的最小间隔
-func (o Option) AutoGcTime() time.Duration {
-	if o.AutoGc == 0 {
+// GetGCInterval 获取自动gc的最小间隔
+func (o Option) GetGCInterval() time.Duration {
+	if o.GCInterval == 0 {
 		return 300 * time.Second
 	}
-	return o.AutoGc
+	return o.GCInterval
 }
 
 // CacheDir 缓存根目录

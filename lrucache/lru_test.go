@@ -15,13 +15,17 @@ import (
 )
 
 func TestLRUCache(t *testing.T) {
-	c, _ := New(1000)
+	c, _ := New(Option{
+		Capacity: 100,
+	})
 
 	cachetest.CacheTest(t, c, "lruCache")
 }
 
 func TestLRUCache2(t *testing.T) {
-	sc, _ := NewSCache(10)
+	sc, _ := NewSCache(Option{
+		Capacity: 10,
+	})
 
 	for i := 0; i < 12; i++ {
 		ret := sc.Set(context.Background(), i, i, 1*time.Hour)
@@ -29,4 +33,14 @@ func TestLRUCache2(t *testing.T) {
 			t.Fatalf("set with error:%v", err)
 		}
 	}
+}
+
+func TestNewWithError(t *testing.T) {
+	_, err := New(Option{
+		Capacity: 0,
+	})
+	if err == nil {
+		t.Fatalf("expect has error")
+	}
+
 }

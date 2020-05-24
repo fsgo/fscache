@@ -179,7 +179,7 @@ func (f *SCache) Reset(ctx context.Context) error {
 
 func (f *SCache) autoGC() {
 	lastGc := atomic.LoadInt64(&f.gcTime)
-	if time.Now().UnixNano()-lastGc < int64(f.opt.AutoGcTime()) {
+	if time.Now().UnixNano()-lastGc < int64(f.opt.GetGCInterval()) {
 		return
 	}
 

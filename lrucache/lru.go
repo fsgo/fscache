@@ -11,8 +11,8 @@ import (
 )
 
 // New 创建新的lru缓存实例
-func New(capacity int) (cache.ICache, error) {
-	sc, err := NewSCache(capacity)
+func New(opt IOption) (cache.ICache, error) {
+	sc, err := NewSCache(opt)
 	if err != nil {
 		return nil, err
 	}

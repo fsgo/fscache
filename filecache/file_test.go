@@ -21,3 +21,12 @@ func TestNew(t *testing.T) {
 	}
 	cachetest.CacheTest(t, c, "fileCache")
 }
+
+func TestNewWithErr(t *testing.T) {
+	_, err := New(Option{
+		Dir: "",
+	})
+	if err == nil {
+		t.Fatalf("new cache expect error")
+	}
+}

@@ -18,9 +18,12 @@ import (
 )
 
 // NewSCache 创建普通(非批量)
-func NewSCache(capacity int) (cache.ISCache, error) {
+func NewSCache(opt IOption) (cache.ISCache, error) {
+	if err := opt.Check(); err != nil {
+		return nil, err
+	}
 	sc := &SCache{
-		capacity: capacity,
+		opt: opt,
 	}
 	sc.Reset(context.Background())
 	return sc, nil
@@ -28,10 +31,10 @@ func NewSCache(capacity int) (cache.ISCache, error) {
 
 // SCache lru普通缓存
 type SCache struct {
-	capacity int
-	data     map[interface{}]*list.Element
-	list     *list.List
-	lock     sync.Mutex
+	opt  IOption
+	data map[interface{}]*list.Element
+	list *list.List
+	lock sync.Mutex
 }
 
 // Get 读取
@@ -70,7 +73,7 @@ func (L *SCache) Set(ctx context.Context, key interface{}, val interface{}, ttl 
 	}
 	elm := L.list.PushFront(cacheVal)
 	L.data[key] = elm
-	if L.list.Len() > L.capacity {
+	if L.list.Len() > L.opt.GetCapacity() {
 		L.weedOut()
 	}
 	return cache.NewSetResult(nil)
@@ -125,7 +128,7 @@ func (L *SCache) Delete(ctx context.Context, key interface{}) cache.DeleteResult
 func (L *SCache) Reset(ctx context.Context) error {
 	L.lock.Lock()
 	defer L.lock.Unlock()
-	L.data = make(map[interface{}]*list.Element, L.capacity)
+	L.data = make(map[interface{}]*list.Element, L.opt.GetCapacity())
 	L.list = list.New()
 	return nil
 }
@@ -133,7 +136,13 @@ func (L *SCache) Reset(ctx context.Context) error {
 var _ cache.ISCache = (*SCache)(nil)
 
 func newUnmarshaler(val interface{}) cache.Unmarshaler {
-	return func(_ []byte, obj interface{}) error {
+	return func(_ []byte, obj interface{}) (err error) {
+		defer func() {
+			if re := recover(); re != nil {
+				err = fmt.Errorf("panic:%v", re)
+			}
+		}()
+
 		rv := reflect.ValueOf(obj).Elem()
 		if !rv.CanSet() {
 			return fmt.Errorf("cannot Unmarshal, %s cannot set", rv.String())

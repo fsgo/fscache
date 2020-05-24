@@ -13,6 +13,8 @@ import (
 )
 
 func TestCache(t *testing.T) {
-	c, _ := lrucache.New(100)
+	c, _ := lrucache.New(lrucache.Option{
+		Capacity: 100,
+	})
 	CacheTest(t, c, "test")
 }

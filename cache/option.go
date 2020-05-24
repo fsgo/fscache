@@ -10,11 +10,17 @@ import (
 	"github.com/vmihailenco/msgpack/v4"
 )
 
+// Checker 检查是否有错误
+type Checker interface {
+	Check() error
+}
+
 // IOption 配置选项接口
 type IOption interface {
 	Unmarshaler() Unmarshaler
 	Marshaler() Marshaler
-	Check() error
+
+	Checker
 }
 
 // Option 配置选型
