@@ -3,7 +3,7 @@
 统一封装的缓存接口，目前已包含文件缓存(FileCache)、内存LRU缓存。
 
 [![Build Status](https://travis-ci.org/fsgo/fscache.png?branch=master)](https://travis-ci.org/fsgo/fscache)
-[![GoCover](http://gocover.io/_badge/github.com/fsgo/fscache)](http://gocover.io/github.com/fsgo/fscache)
+[![GoCover](https://gocover.io/_badge/github.com/fsgo/fscache)](https://gocover.io/github.com/fsgo/fscache)
 [![GoDoc](https://godoc.org/github.com/fsgo/fscache?status.svg)](https://godoc.org/github.com/fsgo/fscache)
 
 ## 1.缓存接口定义
