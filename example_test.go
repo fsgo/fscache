@@ -1,8 +1,6 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/24
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu (duv123+git@baidu.com)
+// Date: 2020/5/24
 
 package fscache_test
 
@@ -15,35 +13,8 @@ import (
 	"github.com/fsgo/fscache"
 )
 
-func ExampleNewLRUCache() {
-	cache, err := fscache.NewLRUCache(fscache.LRUOption{
-		Capacity: 100,
-	})
-	if err != nil {
-		log.Fatalf("init lru cache failed: %v", err)
-	}
-	cacheWriteRead(cache)
-
-	// OutPut:
-	// true
-	// world
-}
-
-func ExampleNewFileCache() {
-	cache, err := fscache.NewFileCache(fscache.FileOption{
-		Dir: "filecache/testdata/cache_dir/",
-	})
-	if err != nil {
-		log.Fatalf("init lru cache failed: %v", err)
-	}
-	cacheWriteRead(cache)
-
-	// OutPut:
-	// true
-	// world
-}
-
-func cacheWriteRead(cache fscache.ICache) {
+func ExampleNil_Get() {
+	cache := fscache.Nil
 	key := "hello"
 	value := "world"
 

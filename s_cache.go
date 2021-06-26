@@ -1,10 +1,8 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/10
- */
+// Copyright(C) 2021 github.com/fsgo  All Rights Reserved.
+// Author: fsgo
+// Date: 2021/6/26
 
-package cache
+package fscache
 
 import (
 	"context"
@@ -13,8 +11,8 @@ import (
 	"time"
 )
 
-// ISCache 普通的单个缓存
-type ISCache interface {
+// SCache 普通的单个缓存
+type SCache interface {
 	Get(ctx context.Context, key interface{}) GetResult
 	Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) SetResult
 	Has(ctx context.Context, key interface{}) HasResult
@@ -43,7 +41,7 @@ func (r *resultError) Err() error {
 	return r.err
 }
 
-// NewGetResult 创建Get方法的结果
+// NewGetResult 创建 Get 方法的结果
 func NewGetResult(bf []byte, err error, unmarshaler Unmarshaler) GetResult {
 	return &getResult{
 		err:         err,
@@ -56,8 +54,10 @@ func NewGetResult(bf []byte, err error, unmarshaler Unmarshaler) GetResult {
 type GetResult interface {
 	ResultError
 
+	// Value 获取缓存的值
 	Value(obj interface{}) (has bool, err error)
-	// 是否有值
+
+	// Has 是否有值
 	Has() bool
 }
 

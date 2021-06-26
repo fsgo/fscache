@@ -1,8 +1,6 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/23
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu (duv123+git@baidu.com)
+// Date: 2020/5/23
 
 package lrucache
 
@@ -15,7 +13,7 @@ import (
 )
 
 func TestLRUCache(t *testing.T) {
-	c, _ := New(Option{
+	c, _ := New(&Option{
 		Capacity: 100,
 	})
 
@@ -23,7 +21,7 @@ func TestLRUCache(t *testing.T) {
 }
 
 func TestLRUCache2(t *testing.T) {
-	sc, _ := NewSCache(Option{
+	sc, _ := NewSCache(&Option{
 		Capacity: 10,
 	})
 
@@ -36,7 +34,7 @@ func TestLRUCache2(t *testing.T) {
 }
 
 func TestNewWithError(t *testing.T) {
-	_, err := New(Option{
+	_, err := New(&Option{
 		Capacity: 0,
 	})
 	if err == nil {

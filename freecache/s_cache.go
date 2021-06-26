@@ -1,8 +1,6 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/30
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu (duv123+git@baidu.com)
+// Date: 2020/5/30
 
 package freecache
 
@@ -13,71 +11,73 @@ import (
 
 	"github.com/coocood/freecache"
 
-	"github.com/fsgo/fscache/cache"
+	"github.com/fsgo/fscache"
 )
 
-type SCache struct {
-	opt   IOption
+// sCache 普通缓存
+type sCache struct {
+	opt   OptionType
 	cache freecache.Cache
 }
 
-func (s *SCache) Get(ctx context.Context, key interface{}) cache.GetResult {
+func (s *sCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
 	kb, err := s.opt.Marshaler()(key)
 	if err != nil {
-		return cache.NewGetResult(nil, err, nil)
+		return fscache.NewGetResult(nil, err, nil)
 	}
-	if vb, err := s.cache.Get(kb); err != nil {
+	vb, err := s.cache.Get(kb)
+	if err != nil {
 		if err == freecache.ErrNotFound {
-			return cache.NewGetResult(nil, cache.ErrNotExists, nil)
+			return fscache.NewGetResult(nil, fscache.ErrNotExists, nil)
 		}
-		return cache.NewGetResult(nil, err, nil)
-	} else {
-		return cache.NewGetResult(vb, nil, s.opt.Unmarshaler())
+		return fscache.NewGetResult(nil, err, nil)
 	}
+	return fscache.NewGetResult(vb, nil, s.opt.Unmarshaler())
 }
 
-func (s *SCache) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) cache.SetResult {
+func (s *sCache) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) fscache.SetResult {
 	kb, err := s.opt.Marshaler()(key)
 	if err != nil {
-		return cache.NewSetResult(fmt.Errorf("encode key with error:%w", err))
+		return fscache.NewSetResult(fmt.Errorf("encode key with error:%w", err))
 	}
 	vb, err := s.opt.Marshaler()(value)
 	if err != nil {
-		return cache.NewSetResult(fmt.Errorf("encode value with error:%w", err))
+		return fscache.NewSetResult(fmt.Errorf("encode value with error:%w", err))
 	}
 	errSet := s.cache.Set(kb, vb, int(ttl.Seconds()))
-	return cache.NewSetResult(errSet)
+	return fscache.NewSetResult(errSet)
 }
 
-func (s *SCache) Has(ctx context.Context, key interface{}) cache.HasResult {
+func (s *sCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
 	kb, err := s.opt.Marshaler()(key)
 	if err != nil {
-		return cache.NewHasResult(fmt.Errorf("encode key with error:%w", err), false)
+		return fscache.NewHasResult(fmt.Errorf("encode key with error:%w", err), false)
 	}
 	_, errGet := s.cache.Get(kb)
 	if errGet == nil {
-		return cache.NewHasResult(nil, true)
+		return fscache.NewHasResult(nil, true)
 	} else if errGet == freecache.ErrNotFound {
-		return cache.NewHasResult(cache.ErrNotExists, false)
+		return fscache.NewHasResult(fscache.ErrNotExists, false)
 	} else {
-		return cache.NewHasResult(errGet, false)
+		return fscache.NewHasResult(errGet, false)
 	}
 }
 
-func (s *SCache) Delete(ctx context.Context, key interface{}) cache.DeleteResult {
+func (s *sCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResult {
 	kb, err := s.opt.Marshaler()(key)
 	if err != nil {
-		return cache.NewDeleteResult(fmt.Errorf("encode key with error:%w", err), 0)
+		return fscache.NewDeleteResult(fmt.Errorf("encode key with error:%w", err), 0)
 	}
 	if ok := s.cache.Del(kb); ok {
-		return cache.NewDeleteResult(nil, 1)
+		return fscache.NewDeleteResult(nil, 1)
 	}
-	return cache.NewDeleteResult(nil, 0)
+	return fscache.NewDeleteResult(nil, 0)
 
 }
 
-func (s *SCache) Reset(ctx context.Context) error {
-	panic("implement me")
+func (s *sCache) Reset(ctx context.Context) error {
+	s.cache.Clear()
+	return nil
 }
 
-var _ cache.ISCache = (*SCache)(nil)
+var _ fscache.SCache = (*sCache)(nil)

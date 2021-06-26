@@ -1,8 +1,6 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/30
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu (duv123+git@baidu.com)
+// Date: 2020/5/30
 
 package chains
 
@@ -10,14 +8,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/fsgo/fscache/cache"
+	"github.com/fsgo/fscache"
 )
 
+// SetTTLFn 设置缓存的 ttl
 type SetTTLFn func(ttl time.Duration) time.Duration
 
-type IChains interface {
-	cache.ICache
-	AddCache(cache cache.ICache, ttlFn SetTTLFn)
+// Chains 链式缓存
+type Chains interface {
+	fscache.Cache
+	AddCache(cache fscache.Cache, ttlFn SetTTLFn)
 }
 
 type sChains struct {
@@ -25,11 +25,11 @@ type sChains struct {
 }
 
 type chainsCache struct {
-	cache    cache.ISCache
+	cache    fscache.SCache
 	setTTLFn SetTTLFn
 }
 
-func (c *sChains) Get(ctx context.Context, key interface{}) (result cache.GetResult) {
+func (c *sChains) Get(ctx context.Context, key interface{}) (result fscache.GetResult) {
 	var index int
 	for i, subCache := range c.caches {
 		if result = subCache.cache.Get(ctx, key); result.Has() {
@@ -44,14 +44,14 @@ func (c *sChains) Get(ctx context.Context, key interface{}) (result cache.GetRes
 	return result
 }
 
-func (c *sChains) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) (result cache.SetResult) {
+func (c *sChains) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) (result fscache.SetResult) {
 	for _, subCache := range c.caches {
 		result = subCache.cache.Set(ctx, key, value, subCache.setTTLFn(ttl))
 	}
 	return
 }
 
-func (c *sChains) Has(ctx context.Context, key interface{}) (result cache.HasResult) {
+func (c *sChains) Has(ctx context.Context, key interface{}) (result fscache.HasResult) {
 	for _, subCache := range c.caches {
 		if result = subCache.cache.Has(ctx, key); result.Has() {
 			return
@@ -60,7 +60,7 @@ func (c *sChains) Has(ctx context.Context, key interface{}) (result cache.HasRes
 	return
 }
 
-func (c *sChains) Delete(ctx context.Context, key interface{}) (result cache.DeleteResult) {
+func (c *sChains) Delete(ctx context.Context, key interface{}) (result fscache.DeleteResult) {
 	for _, subCache := range c.caches {
 		result = subCache.cache.Delete(ctx, key)
 	}
@@ -74,4 +74,4 @@ func (c *sChains) Reset(ctx context.Context) (err error) {
 	return
 }
 
-var _ cache.ISCache = (*sChains)(nil)
+var _ fscache.SCache = (*sChains)(nil)

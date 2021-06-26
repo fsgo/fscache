@@ -1,8 +1,6 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/17
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu (duv123+git@baidu.com)
+// Date: 2020/5/17
 
 package filecache
 
@@ -15,14 +13,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fsgo/fscache/cache"
+	"github.com/fsgo/fscache"
 )
 
 const cacheFileExt = ".cache"
 
-// IOption filecache 选项接口
-type IOption interface {
-	cache.IOption
+// OptionType filecache 选项接口
+type OptionType interface {
+	fscache.OptionType
 
 	// CacheDir 缓存的目录
 	CacheDir() string
@@ -41,11 +39,11 @@ type Option struct {
 
 	// 触发过期缓存清理的间隔时间
 	GCInterval time.Duration
-	cache.Option
+	fscache.Option
 }
 
 // GetGCInterval 获取自动gc的最小间隔
-func (o Option) GetGCInterval() time.Duration {
+func (o *Option) GetGCInterval() time.Duration {
 	if o.GCInterval == 0 {
 		return 300 * time.Second
 	}
@@ -53,12 +51,12 @@ func (o Option) GetGCInterval() time.Duration {
 }
 
 // CacheDir 缓存根目录
-func (o Option) CacheDir() string {
+func (o *Option) CacheDir() string {
 	return o.Dir
 }
 
 // CachePath 获取缓存文件地址
-func (o Option) CachePath(key interface{}) string {
+func (o *Option) CachePath(key interface{}) string {
 	h := md5.New()
 	h.Write([]byte(fmt.Sprint(key)))
 	s := hex.EncodeToString(h.Sum(nil))
@@ -67,7 +65,7 @@ func (o Option) CachePath(key interface{}) string {
 }
 
 // Check 检查是否正确
-func (o Option) Check() error {
+func (o *Option) Check() error {
 	if err := o.Option.Check(); err != nil {
 		return err
 	}
@@ -78,4 +76,4 @@ func (o Option) Check() error {
 	return nil
 }
 
-var _ IOption = (*Option)(nil)
+var _ OptionType = (*Option)(nil)

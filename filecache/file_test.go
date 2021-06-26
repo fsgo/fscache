@@ -1,8 +1,6 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/10
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu (duv123+git@baidu.com)
+// Date: 2020/5/10
 
 package filecache
 
@@ -13,7 +11,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	c, err := New(Option{
+	c, err := New(&Option{
 		Dir: "./testdata/cache_dir/",
 	})
 	if err != nil {
@@ -23,7 +21,7 @@ func TestNew(t *testing.T) {
 }
 
 func TestNewWithErr(t *testing.T) {
-	_, err := New(Option{
+	_, err := New(&Option{
 		Dir: "",
 	})
 	if err == nil {

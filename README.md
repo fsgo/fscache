@@ -8,8 +8,8 @@
 
 ## 1.缓存接口定义
 ```go
-// ICache 缓存API
-type ICache interface {
+// Cache 缓存API
+type Cache interface {
     Get(ctx context.Context, key interface{}) GetResult
     Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) SetResult
     Has(ctx context.Context, key interface{}) HasResult
@@ -24,29 +24,20 @@ type ICache interface {
 ```
 注：为了将批请求结果和单个处理结果尽量保持一致，操作结果均返回一个值。可以使用对应的`Err()`方法来判断是否有异常
 
-  
-已支持的缓存：
-```go
-// NewFileCache 创建文件缓存
-func NewFileCache(opt FileIOption) (ICache, error)
-
-// NewLRUCache 创建内存lru缓存
-func NewLRUCache(opt LRUIOption) (ICache, error)
-```
 
 ## 2.使用示例
 ```go
 import (
-    "github.com/fsgo/fscache"
+    "github.com/fsgo/fscache/filecache"
 )
 
-opt:=fscache.FileOption{
+opt:=filecache.Option{
     Dir: "./testdata/cache_dir/",
 }
 
-fc,err:=fscache.NewFileCache(opt)
+fc,err:=filecache.New(opt)
 if err != nil {
-    log.Fatalf("init lru cache failed: %v", err)
+    log.Fatalf("init cache failed: %v", err)
 }
 
 // 1.读取缓存

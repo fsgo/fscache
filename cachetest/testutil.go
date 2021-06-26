@@ -1,8 +1,6 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/23
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu (duv123+git@baidu.com)
+// Date: 2020/5/23
 
 package cachetest
 
@@ -12,17 +10,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/fsgo/fscache/cache"
+	"github.com/fsgo/fscache"
 )
 
 // CacheTest  测试缓存
-func CacheTest(t *testing.T, c cache.ICache, prex string) {
+func CacheTest(t *testing.T, c fscache.Cache, prex string) {
 	SCacheTest(t, c, prex+"_sCache")
 	MCacheTest(t, c, prex+"_mCache")
 }
 
 // SCacheTest 测试SCache
-func SCacheTest(t *testing.T, c cache.ISCache, prex string) {
+func SCacheTest(t *testing.T, c fscache.SCache, prex string) {
 	kv := map[interface{}]interface{}{
 		123:   234,
 		234:   456,
@@ -126,7 +124,7 @@ func SCacheTest(t *testing.T, c cache.ISCache, prex string) {
 }
 
 // MCacheTest 测试MCache
-func MCacheTest(t *testing.T, c cache.IMCache, prex string) {
+func MCacheTest(t *testing.T, c fscache.MCache, prex string) {
 	kv := map[interface{}]interface{}{
 		12345:    234,
 		23456:    456,
@@ -182,7 +180,7 @@ func MCacheTest(t *testing.T, c cache.IMCache, prex string) {
 	})
 }
 
-func checkNoErr(t *testing.T, ret cache.ResultError, msg string) {
+func checkNoErr(t *testing.T, ret fscache.ResultError, msg string) {
 	if err := ret.Err(); err != nil {
 		t.Fatalf("%s err=", err)
 	}

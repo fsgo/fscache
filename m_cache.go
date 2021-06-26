@@ -1,10 +1,8 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/10
- */
+// Copyright(C) 2021 github.com/fsgo  All Rights Reserved.
+// Author: fsgo
+// Date: 2021/6/26
 
-package cache
+package fscache
 
 import (
 	"context"
@@ -13,12 +11,32 @@ import (
 	"time"
 )
 
-// IMCache 缓存-批处理接口
-type IMCache interface {
+// MGeter 批量查询缓存
+type MGeter interface {
 	MGet(ctx context.Context, keys []interface{}) MGetResult
+}
+
+// MSeter 批量设置缓存
+type MSeter interface {
 	MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult
+}
+
+// MDeleter 批量删除缓存
+type MDeleter interface {
 	MDelete(ctx context.Context, keys []interface{}) MDeleteResult
+}
+
+// MHaser 批量判断是否存在
+type MHaser interface {
 	MHas(ctx context.Context, keys []interface{}) MHasResult
+}
+
+// MCache 缓存-批处理接口
+type MCache interface {
+	MGeter
+	MSeter
+	MDeleter
+	MHaser
 }
 
 // KVData  k-v pairs
@@ -57,7 +75,7 @@ func (md MDeleteResult) Num() int {
 type MHasResult map[interface{}]HasResult
 
 // NewMCacheBySCache 创建一个MCacheBySCache实例
-func NewMCacheBySCache(sCache ISCache, concurrent bool) IMCache {
+func NewMCacheBySCache(sCache SCache, concurrent bool) MCache {
 	return &mCacheBySCache{
 		sCache:     sCache,
 		concurrent: concurrent,
@@ -66,11 +84,14 @@ func NewMCacheBySCache(sCache ISCache, concurrent bool) IMCache {
 
 // mCacheBySCache 通过对sCache简单封装获取到的批量查询缓存实例
 type mCacheBySCache struct {
-	sCache     ISCache
+	sCache     SCache
 	concurrent bool
 }
 
 func (m *mCacheBySCache) MGet(ctx context.Context, keys []interface{}) MGetResult {
+	if mg, ok := m.sCache.(MGeter); ok {
+		return mg.MGet(ctx, keys)
+	}
 	result := make(MGetResult, len(keys))
 	var wg sync.WaitGroup
 	var lock sync.Mutex
@@ -97,6 +118,9 @@ func (m *mCacheBySCache) MGet(ctx context.Context, keys []interface{}) MGetResul
 }
 
 func (m *mCacheBySCache) MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult {
+	if mg, ok := m.sCache.(MSeter); ok {
+		return mg.MSet(ctx, kvs, ttl)
+	}
 	result := make(MSetResult, len(kvs))
 	var wg sync.WaitGroup
 	var lock sync.Mutex
@@ -125,6 +149,9 @@ func (m *mCacheBySCache) MSet(ctx context.Context, kvs KVData, ttl time.Duration
 }
 
 func (m *mCacheBySCache) MDelete(ctx context.Context, keys []interface{}) MDeleteResult {
+	if mg, ok := m.sCache.(MDeleter); ok {
+		return mg.MDelete(ctx, keys)
+	}
 	result := make(MDeleteResult, len(keys))
 	var wg sync.WaitGroup
 	var lock sync.Mutex
@@ -151,6 +178,9 @@ func (m *mCacheBySCache) MDelete(ctx context.Context, keys []interface{}) MDelet
 }
 
 func (m *mCacheBySCache) MHas(ctx context.Context, keys []interface{}) MHasResult {
+	if mg, ok := m.sCache.(MHaser); ok {
+		return mg.MHas(ctx, keys)
+	}
 	result := make(MHasResult, len(keys))
 	var wg sync.WaitGroup
 	var lock sync.Mutex
@@ -185,4 +215,4 @@ func (m *mCacheBySCache) runFn(fn func()) {
 	}
 }
 
-var _ IMCache = (*mCacheBySCache)(nil)
+var _ MCache = (*mCacheBySCache)(nil)

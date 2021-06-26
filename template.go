@@ -1,10 +1,8 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/23
- */
+// Copyright(C) 2021 github.com/fsgo  All Rights Reserved.
+// Author: fsgo
+// Date: 2021/6/26
 
-package cache
+package fscache
 
 import (
 	"context"
@@ -13,12 +11,12 @@ import (
 
 // Template 缓存模板类
 type Template struct {
-	SCache ISCache
-	MCache IMCache
+	SCache SCache
+	MCache MCache
 }
 
 // NewTemplate 利用一个简单的缓存类，创建一个包含批量接口的缓存类
-func NewTemplate(sCache ISCache, concurrent bool) ICache {
+func NewTemplate(sCache SCache, concurrent bool) Cache {
 	return &Template{
 		SCache: sCache,
 		MCache: NewMCacheBySCache(sCache, concurrent),
@@ -70,4 +68,4 @@ func (c *Template) Reset(ctx context.Context) error {
 	return c.SCache.Reset(ctx)
 }
 
-var _ ICache = (*Template)(nil)
+var _ Cache = (*Template)(nil)

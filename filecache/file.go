@@ -1,20 +1,18 @@
-/*
- * Copyright(C) 2020 github.com/hidu  All Rights Reserved.
- * Author: hidu (duv123+git@baidu.com)
- * Date: 2020/5/10
- */
+// Copyright(C) 2020 github.com/hidu  All Rights Reserved.
+// Author: hidu (duv123+git@baidu.com)
+// Date: 2020/5/10
 
 package filecache
 
 import (
-	"github.com/fsgo/fscache/cache"
+	"github.com/fsgo/fscache"
 )
 
 // New 创建新缓存实例
-func New(opt IOption) (cache.ICache, error) {
+func New(opt OptionType) (fscache.Cache, error) {
 	sc, err := NewSCache(opt)
 	if err != nil {
 		return nil, err
 	}
-	return cache.NewTemplate(sc, false), nil
+	return fscache.NewTemplate(sc, false), nil
 }
