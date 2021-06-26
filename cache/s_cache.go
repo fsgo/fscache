@@ -55,13 +55,23 @@ func NewGetResult(bf []byte, err error, unmarshaler Unmarshaler) GetResult {
 // GetResult Get 方法的结果的接口定义
 type GetResult interface {
 	ResultError
+
 	Value(obj interface{}) (has bool, err error)
+	// 是否有值
+	Has() bool
 }
 
 type getResult struct {
 	err         error
 	val         []byte
 	unmarshaler Unmarshaler
+}
+
+func (g *getResult) Has() bool {
+	if g.err == ErrNotExists {
+		return false
+	}
+	return g.err != nil
 }
 
 func (g *getResult) Err() error {

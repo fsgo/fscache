@@ -8,6 +8,7 @@ package filecache
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io/ioutil"
@@ -49,7 +50,6 @@ func (f *SCache) Get(ctx context.Context, key interface{}) cache.GetResult {
 	if err != nil {
 		return cache.NewGetResult(nil, err, nil)
 	}
-
 	if expire {
 		f.Delete(ctx, key)
 		return cache.NewGetResult(nil, cache.ErrNotExists, nil)
@@ -91,13 +91,13 @@ func (f *SCache) Set(ctx context.Context, key interface{}, value interface{}, tt
 	writer.WriteString(strconv.FormatInt(time.Now().Unix(), 10))
 	writer.WriteString("\n")
 	writer.Write(msg)
-	if err := writer.Flush(); err != nil {
+	if err = writer.Flush(); err != nil {
 		return cache.NewSetResult(err)
 	}
-	if err := file.Close(); err != nil {
+	if err = file.Close(); err != nil {
 		return cache.NewSetResult(err)
 	}
-	if err := os.Rename(file.Name(), fp); err != nil {
+	if err = os.Rename(file.Name(), fp); err != nil {
 		return cache.NewSetResult(err)
 	}
 	return cache.NewSetResult(nil)
@@ -113,18 +113,16 @@ func (f *SCache) readByPath(fp string, needData bool) (expire bool, data []byte,
 		return false, nil, cache.ErrNotExists
 	}
 
-	file, err := os.Open(fp)
-	if err != nil {
-		return true, nil, err
+	content,err:=os.ReadFile(fp)
+	if err!=nil{
+		return true,nil,err
 	}
-	defer file.Close()
-	reader := bufio.NewReader(file)
+	lines:=bytes.SplitN(content,[]byte("\n"),3)
+	if len(lines)<2{
+		return true,nil,fmt.Errorf("invalid cache file")
+	}
 	// 第一行为过期时间，格式为：etime=UnixNano()
-	first, _, err := reader.ReadLine()
-	if err != nil {
-		return true, nil, err
-	}
-
+	first:=lines[0]
 	if len(first) < len("etime=") {
 		return true, nil, fmt.Errorf("not valid cache line, expect etime=\\d+, got=%q", first)
 	}
@@ -137,10 +135,7 @@ func (f *SCache) readByPath(fp string, needData bool) (expire bool, data []byte,
 		return expire, nil, nil
 	}
 	// 第二行为创建时间，格式为：ctime=unix时间戳
-	reader.ReadLine()
-
-	data, _, err = reader.ReadLine()
-	return expire, data, err
+	return expire, lines[2], err
 }
 
 // Has 判断是否存在
@@ -208,7 +203,7 @@ func (f *SCache) gc() {
 	}()
 	filepath.Walk(f.opt.CacheDir(), func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
-			if err := f.checkFile(path); err != nil {
+			if err = f.checkFile(path); err != nil {
 				log.Printf("[filecache][warn] checkFile %q failed, %s\n", path, err.Error())
 			}
 		}

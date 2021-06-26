@@ -25,6 +25,7 @@ type IMCache interface {
 type KVData map[interface{}]interface{}
 
 // MGetResult 批量查询MGet接口的结果
+// 若key不存在，是不存在
 type MGetResult map[interface{}]GetResult
 
 // MSetResult 批量设置MSet接口的结果
