@@ -14,9 +14,9 @@ import (
 )
 
 // CacheTest  测试缓存
-func CacheTest(t *testing.T, c fscache.Cache, prex string) {
-	SCacheTest(t, c, prex+"_sCache")
-	MCacheTest(t, c, prex+"_mCache")
+func CacheTest(t *testing.T, c fscache.Cache, prefix string) {
+	SCacheTest(t, c, prefix+"_sCache")
+	MCacheTest(t, c, prefix+"_mCache")
 }
 
 // SCacheTest 测试SCache
@@ -117,8 +117,8 @@ func SCacheTest(t *testing.T, c fscache.SCache, prex string) {
 	t.Run("Delete_miss", func(t *testing.T) {
 		delRet := c.Delete(context.Background(), "not_exists")
 		checkNoErr(t, delRet, "Delete_miss")
-		if num := delRet.Num(); num != 0 {
-			t.Errorf("Num=%d, want=0", num)
+		if num := delRet.Deleted(); num != 0 {
+			t.Errorf("Deleted=%d, want=0", num)
 		}
 	})
 }
@@ -137,7 +137,7 @@ func MCacheTest(t *testing.T, c fscache.MCache, prex string) {
 	}
 	mSetRet := c.MSet(context.Background(), kv, 10*time.Second)
 
-	if mSetRet.HasError() {
+	if mSetRet.Err() != nil {
 		t.Fatalf("mset has error,ret=%v", mSetRet)
 	}
 
@@ -172,10 +172,10 @@ func MCacheTest(t *testing.T, c fscache.MCache, prex string) {
 
 	t.Run(prex+"_MDelete", func(t *testing.T) {
 		retMDel := c.MDelete(context.Background(), keys)
-		got := retMDel.Num()
+		got := retMDel.Deleted()
 		want := len(keys)
 		if got != want {
-			t.Errorf("MDelete ret.Num()=%d want=%d", got, want)
+			t.Errorf("MDelete ret.Deleted()=%d want=%d", got, want)
 		}
 	})
 }

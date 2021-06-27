@@ -5,19 +5,22 @@
 package filecache
 
 import (
+	"os"
 	"testing"
 
 	"github.com/fsgo/fscache/cachetest"
 )
 
 func TestNew(t *testing.T) {
+	dir := "./testdata/cache_dir/"
 	c, err := New(&Option{
-		Dir: "./testdata/cache_dir/",
+		Dir: dir,
 	})
 	if err != nil {
 		t.Fatalf("new cache with error:%v", err)
 	}
 	cachetest.CacheTest(t, c, "fileCache")
+	_ = os.RemoveAll(dir)
 }
 
 func TestNewWithErr(t *testing.T) {

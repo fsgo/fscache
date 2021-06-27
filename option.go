@@ -5,7 +5,7 @@
 package fscache
 
 import (
-	"github.com/vmihailenco/msgpack/v4"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 // OptionType 配置选项接口

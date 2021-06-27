@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/fsgo/fscache"
+	"github.com/fsgo/fscache/internal"
 )
 
 // NewSCache 创建普通的缓存实例
@@ -50,7 +51,7 @@ func (f *SCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
 	}
 	if expire {
 		f.Delete(ctx, key)
-		return fscache.NewGetResult(nil, fscache.ErrNotExists, nil)
+		return internal.GetRetNotExists
 	}
 	return fscache.NewGetResult(data, nil, f.opt.Unmarshaler())
 }
@@ -106,7 +107,7 @@ func (f *SCache) Set(ctx context.Context, key interface{}, value interface{}, tt
 	if err = os.Rename(file.Name(), fp); err != nil {
 		return fscache.NewSetResult(err)
 	}
-	return fscache.NewSetResult(nil)
+	return internal.SetRetSuc
 }
 
 func (f *SCache) readByKey(key interface{}, needData bool) (expire bool, data []byte, err error) {
@@ -153,9 +154,9 @@ func (f *SCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
 		return fscache.NewHasResult(err, false)
 	}
 	if !expire {
-		return fscache.NewHasResult(nil, true)
+		return internal.HasRetYes
 	}
-	return fscache.NewHasResult(nil, false)
+	return internal.HasRetNot
 }
 
 // Delete 删除
@@ -169,9 +170,9 @@ func (f *SCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResu
 func (f *SCache) Reset(ctx context.Context) error {
 	return filepath.Walk(f.opt.CacheDir(), func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() && strings.HasSuffix(info.Name(), cacheFileExt) {
-			err := os.Remove(path)
-			if err != nil {
-				log.Printf("[filecache][warn] remove %q failed, %s\n", path, err.Error())
+			err1 := os.Remove(path)
+			if err1 != nil {
+				log.Printf("[filecache][warn] remove %q failed, %s\n", path, err1.Error())
 			}
 		}
 		return nil
@@ -234,6 +235,7 @@ func (f *SCache) checkFile(fp string) error {
 }
 
 var _ fscache.SCache = (*SCache)(nil)
+var _ fscache.Reseter = (*SCache)(nil)
 
 func init() {
 	rand.Seed(time.Now().UnixNano())

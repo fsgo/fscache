@@ -6,6 +6,7 @@ package fscache
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -65,7 +66,11 @@ func (c *Template) MHas(ctx context.Context, keys []interface{}) MHasResult {
 
 // Reset 重置缓存
 func (c *Template) Reset(ctx context.Context) error {
-	return c.SCache.Reset(ctx)
+	if rc, ok := c.SCache.(Reseter); ok {
+		return rc.Reset(ctx)
+	}
+	return fmt.Errorf("not implemented Reseter")
 }
 
 var _ Cache = (*Template)(nil)
+var _ Reseter = (*Template)(nil)

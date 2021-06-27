@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/fsgo/fscache"
+	"github.com/fsgo/fscache/internal"
 )
 
 // NewSCache 创建普通(非批量)
@@ -67,14 +68,14 @@ func (L *SCache) Set(ctx context.Context, key interface{}, val interface{}, ttl 
 	if has {
 		el.Value = cacheVal
 		L.list.MoveToFront(el)
-		return fscache.NewSetResult(nil)
+		return internal.SetRetSuc
 	}
 	elm := L.list.PushFront(cacheVal)
 	L.data[key] = elm
 	if L.list.Len() > L.opt.GetCapacity() {
 		L.weedOut()
 	}
-	return fscache.NewSetResult(nil)
+	return internal.SetRetSuc
 }
 
 func (L *SCache) weedOut() {
@@ -105,8 +106,9 @@ func (L *SCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
 		delete(L.data, key)
 		L.list.Remove(el)
 		L.lock.Unlock()
+		return internal.HasRetYes
 	}
-	return fscache.NewHasResult(nil, has)
+	return internal.HasRetNot
 }
 
 // Delete 删除
@@ -115,11 +117,11 @@ func (L *SCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResu
 	defer L.lock.Unlock()
 	el, has := L.data[key]
 	if !has {
-		return fscache.NewDeleteResult(nil, 0)
+		return internal.DeleteRetSucHas0
 	}
 	delete(L.data, key)
 	L.list.Remove(el)
-	return fscache.NewDeleteResult(nil, 1)
+	return internal.DeleteRetSucHas1
 }
 
 // Reset 重置、清空所有缓存

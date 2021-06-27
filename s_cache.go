@@ -17,8 +17,10 @@ type SCache interface {
 	Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) SetResult
 	Has(ctx context.Context, key interface{}) HasResult
 	Delete(ctx context.Context, key interface{}) DeleteResult
+}
 
-	// 缓存数据重置
+// Reseter 重置缓存
+type Reseter interface {
 	Reset(ctx context.Context) error
 }
 
@@ -61,6 +63,8 @@ type GetResult interface {
 	Has() bool
 }
 
+var getRetNotExists = NewGetResult(nil, ErrNotExists, nil)
+
 type getResult struct {
 	err         error
 	val         []byte
@@ -71,7 +75,7 @@ func (g *getResult) Has() bool {
 	if g.err == ErrNotExists {
 		return false
 	}
-	return g.err != nil
+	return g.err == nil
 }
 
 func (g *getResult) Err() error {
@@ -113,6 +117,8 @@ func NewSetResult(err error) SetResult {
 	}
 }
 
+var setRetSuc = NewSetResult(nil)
+
 // SetResult Set接口的结果接口定义
 type SetResult interface {
 	ResultError
@@ -126,10 +132,14 @@ func NewDeleteResult(err error, num int) DeleteResult {
 	}
 }
 
+var deleteRetSucHas0 = NewDeleteResult(nil, 0)
+
 // DeleteResult Delete方法的结果接口定义
 type DeleteResult interface {
 	ResultError
-	Num() int
+
+	// Deleted 删除的数量
+	Deleted() int
 }
 
 type deleteResult struct {
@@ -141,7 +151,7 @@ func (d *deleteResult) Err() error {
 	return d.err
 }
 
-func (d *deleteResult) Num() int {
+func (d *deleteResult) Deleted() int {
 	return d.num
 }
 
@@ -154,6 +164,8 @@ func NewHasResult(err error, has bool) HasResult {
 		has: has,
 	}
 }
+
+var hasRetNot = NewHasResult(ErrNotExists, false)
 
 // HasResult Has接口的结果接口定义
 type HasResult interface {

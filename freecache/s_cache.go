@@ -12,6 +12,7 @@ import (
 	"github.com/coocood/freecache"
 
 	"github.com/fsgo/fscache"
+	"github.com/fsgo/fscache/internal"
 )
 
 // sCache 普通缓存
@@ -28,7 +29,7 @@ func (s *sCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
 	vb, err := s.cache.Get(kb)
 	if err != nil {
 		if err == freecache.ErrNotFound {
-			return fscache.NewGetResult(nil, fscache.ErrNotExists, nil)
+			return internal.GetRetNotExists
 		}
 		return fscache.NewGetResult(nil, err, nil)
 	}
@@ -55,9 +56,9 @@ func (s *sCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
 	}
 	_, errGet := s.cache.Get(kb)
 	if errGet == nil {
-		return fscache.NewHasResult(nil, true)
+		return internal.HasRetYes
 	} else if errGet == freecache.ErrNotFound {
-		return fscache.NewHasResult(fscache.ErrNotExists, false)
+		return internal.HasRetNot
 	} else {
 		return fscache.NewHasResult(errGet, false)
 	}
@@ -69,9 +70,9 @@ func (s *sCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResu
 		return fscache.NewDeleteResult(fmt.Errorf("encode key with error:%w", err), 0)
 	}
 	if ok := s.cache.Del(kb); ok {
-		return fscache.NewDeleteResult(nil, 1)
+		return internal.DeleteRetSucHas1
 	}
-	return fscache.NewDeleteResult(nil, 0)
+	return internal.DeleteRetSucHas0
 
 }
 
