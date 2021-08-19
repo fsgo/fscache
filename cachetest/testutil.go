@@ -20,14 +20,14 @@ func CacheTest(t *testing.T, c fscache.Cache, prefix string) {
 }
 
 // SCacheTest 测试SCache
-func SCacheTest(t *testing.T, c fscache.SCache, prex string) {
+func SCacheTest(t *testing.T, c fscache.SCache, prefix string) {
 	kv := map[interface{}]interface{}{
 		123:   234,
 		234:   456,
 		"789": 789,
 	}
 	for k, v := range kv {
-		name := fmt.Sprintf("%s case:key=%v, val=%v", prex, k, v)
+		name := fmt.Sprintf("%s case:key=%v, val=%v", prefix, k, v)
 		t.Run(name, func(t *testing.T) {
 			t.Run("Set", func(t *testing.T) {
 				for i := 0; i < 5; i++ {
@@ -124,7 +124,7 @@ func SCacheTest(t *testing.T, c fscache.SCache, prex string) {
 }
 
 // MCacheTest 测试MCache
-func MCacheTest(t *testing.T, c fscache.MCache, prex string) {
+func MCacheTest(t *testing.T, c fscache.MCache, prefix string) {
 	kv := map[interface{}]interface{}{
 		12345:    234,
 		23456:    456,
@@ -141,7 +141,7 @@ func MCacheTest(t *testing.T, c fscache.MCache, prex string) {
 		t.Fatalf("mset has error,ret=%v", mSetRet)
 	}
 
-	t.Run(prex+"_MGET", func(t *testing.T) {
+	t.Run(prefix+"_MGet", func(t *testing.T) {
 		t.Logf("mget keys=%v", keys)
 
 		retMGet := c.MGet(context.Background(), keys)
@@ -170,7 +170,7 @@ func MCacheTest(t *testing.T, c fscache.MCache, prex string) {
 		}
 	})
 
-	t.Run(prex+"_MDelete", func(t *testing.T) {
+	t.Run(prefix+"_MDelete", func(t *testing.T) {
 		retMDel := c.MDelete(context.Background(), keys)
 		got := retMDel.Deleted()
 		want := len(keys)

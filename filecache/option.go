@@ -18,7 +18,7 @@ import (
 
 const cacheFileExt = ".cache"
 
-// OptionType filecache 选项接口
+// OptionType fileCache 选项接口
 type OptionType interface {
 	fscache.OptionType
 
@@ -28,7 +28,7 @@ type OptionType interface {
 	// CachePath 缓存文件路径
 	CachePath(key interface{}) string
 
-	// GetGCInterval
+	// GetGCInterval 过期清理的间隔
 	GetGCInterval() time.Duration
 }
 
@@ -37,8 +37,10 @@ type Option struct {
 	// Dir 缓存文件存储目录
 	Dir string
 
-	// 触发过期缓存清理的间隔时间
+	// GCInterval 触发过期缓存清理的间隔时间
+	// 若为 0，会使用默认值 300秒
 	GCInterval time.Duration
+
 	fscache.Option
 }
 

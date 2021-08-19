@@ -50,7 +50,7 @@ func (f *SCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
 		return fscache.NewGetResult(nil, err, nil)
 	}
 	if expire {
-		f.Delete(ctx, key)
+		_, _ = f.delete(ctx, key)
 		return internal.GetRetNotExists
 	}
 	return fscache.NewGetResult(data, nil, f.opt.Unmarshaler())
@@ -73,7 +73,7 @@ func (f *SCache) Set(ctx context.Context, key interface{}, value interface{}, tt
 		return fscache.NewSetResult(err)
 	}
 
-	expireAt := time.Now().Add(ttl)
+	expireAt := timeNow().Add(ttl)
 
 	file, err := ioutil.TempFile(dir, filepath.Base(fp))
 	if err != nil {
@@ -83,21 +83,31 @@ func (f *SCache) Set(ctx context.Context, key interface{}, value interface{}, tt
 	defer func() {
 		_, err2 := unlink(file.Name())
 		if err2 != nil {
-			log.Printf("[filecache.Set] unlink(%q) with error:%v\n", file.Name(), err2)
+			log.Printf("[fileCache.Set] unlink(%q) with error:%v\n", file.Name(), err2)
 		}
 	}()
 
-	// cache文件格式：
-	// 第一行为缓存有效期，格式:etime=1590235951234907000
+	// 写 cache 文件：
 	writer := bufio.NewWriter(file)
-	_, _ = writer.WriteString("etime=")
-	_, _ = writer.WriteString(strconv.FormatInt(expireAt.UnixNano(), 10))
-	_, _ = writer.WriteString("\n")
-	// 第二行为创建时间：格式： ctime=1590235951
-	_, _ = writer.WriteString("ctime=")
-	_, _ = writer.WriteString(strconv.FormatInt(time.Now().Unix(), 10))
-	_, _ = writer.WriteString("\n")
-	_, _ = writer.Write(msg)
+	err = writeStrings(writer,
+		// 第一行为缓存有效期，格式:etime=1590235951234907000
+		"etime=",
+		strconv.FormatInt(expireAt.UnixNano(), 10),
+		"\n",
+
+		// 第二行为创建时间：格式： ctime=1590235951
+		"ctime=",
+		strconv.FormatInt(timeNow().Unix(), 10),
+		"\n",
+	)
+
+	if err == nil {
+		_, err = writer.Write(msg)
+	}
+	if err != nil {
+		return fscache.NewSetResult(err)
+	}
+
 	if err = writer.Flush(); err != nil {
 		return fscache.NewSetResult(err)
 	}
@@ -137,7 +147,7 @@ func (f *SCache) readByPath(fp string, needData bool) (expire bool, data []byte,
 	if err != nil {
 		return true, nil, err
 	}
-	expire = expireAt < time.Now().UnixNano()
+	expire = expireAt < timeNow().UnixNano()
 	if !needData {
 		return expire, nil, nil
 	}
@@ -161,9 +171,13 @@ func (f *SCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
 
 // Delete 删除
 func (f *SCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResult {
-	fp := f.opt.CachePath(key)
-	num, err := unlink(fp)
+	num, err := f.delete(ctx, key)
 	return fscache.NewDeleteResult(err, num)
+}
+
+func (f *SCache) delete(ctx context.Context, key interface{}) (int, error) {
+	fp := f.opt.CachePath(key)
+	return unlink(fp)
 }
 
 // Reset  重置
@@ -172,7 +186,7 @@ func (f *SCache) Reset(ctx context.Context) error {
 		if !info.IsDir() && strings.HasSuffix(info.Name(), cacheFileExt) {
 			err1 := os.Remove(path)
 			if err1 != nil {
-				log.Printf("[filecache][warn] remove %q failed, %s\n", path, err1.Error())
+				log.Printf("[fileCache][warn] remove %q failed, %s\n", path, err1.Error())
 			}
 		}
 		return nil
@@ -181,7 +195,7 @@ func (f *SCache) Reset(ctx context.Context) error {
 
 func (f *SCache) autoGC() {
 	lastGc := atomic.LoadInt64(&f.gcTime)
-	newVal := time.Now().UnixNano()
+	newVal := timeNow().UnixNano()
 	if newVal-lastGc < int64(f.opt.GetGCInterval()) {
 		return
 	}
@@ -193,7 +207,7 @@ func (f *SCache) autoGC() {
 	go func() {
 		defer func() {
 			if re := recover(); re != nil {
-				log.Printf("[filecache][warn] autoGC panic:%v\n", re)
+				log.Printf("[fileCache][warn] autoGC panic:%v\n", re)
 			}
 		}()
 		f.gc()
@@ -212,13 +226,13 @@ func (f *SCache) gc() {
 	err := filepath.Walk(f.opt.CacheDir(), func(path string, info os.FileInfo, err error) error {
 		if !info.IsDir() {
 			if err1 := f.checkFile(path); err1 != nil {
-				log.Printf("[filecache][warn] checkFile %q failed, %s\n", path, err1.Error())
+				log.Printf("[fileCache][warn] checkFile %q failed, %s\n", path, err1.Error())
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		log.Println("[filecache.gc] filepath.Walk with error:", err)
+		log.Println("[fileCache.gc] filepath.Walk with error:", err)
 	}
 }
 
@@ -238,7 +252,7 @@ var _ fscache.SCache = (*SCache)(nil)
 var _ fscache.Reseter = (*SCache)(nil)
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
+	rand.Seed(timeNow().UnixNano())
 }
 
 func fileExists(name string) bool {
@@ -251,6 +265,9 @@ func unlink(name string) (int, error) {
 		err := os.Remove(name)
 		if err == nil {
 			return 1, nil
+		}
+		if os.IsNotExist(err) {
+			return 0, nil
 		}
 		return 0, err
 	}

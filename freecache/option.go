@@ -17,12 +17,19 @@ type OptionType interface {
 
 // Option 配置
 type Option struct {
+	// MemSize 内存大小，最小值 512 * 1024
+	// 若为 0，使用默认值 8*1024*1024
 	MemSize int
 	fscache.Option
 }
 
-// GetMemSize p获取配置的内存大小
+const defaultSize = 8 * 1024 * 1024
+
+// GetMemSize 获取配置的内存大小
 func (o *Option) GetMemSize() int {
+	if o.MemSize == 0 {
+		return defaultSize
+	}
 	return o.MemSize
 }
 

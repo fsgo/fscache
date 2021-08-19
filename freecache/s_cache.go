@@ -15,10 +15,22 @@ import (
 	"github.com/fsgo/fscache/internal"
 )
 
+// NewSCache 创建普通的缓存实例
+func NewSCache(opt OptionType) (fscache.SCache, error) {
+	if err := opt.Check(); err != nil {
+		return nil, err
+	}
+	c := freecache.NewCache(opt.GetMemSize())
+	return &sCache{
+		opt:   opt,
+		cache: c,
+	}, nil
+}
+
 // sCache 普通缓存
 type sCache struct {
 	opt   OptionType
-	cache freecache.Cache
+	cache *freecache.Cache
 }
 
 func (s *sCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
