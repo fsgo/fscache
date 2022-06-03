@@ -40,5 +40,4 @@ func TestNewWithError(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expect has error")
 	}
-
 }

@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-// MGeter 批量查询缓存
-type MGeter interface {
+// MGetter 批量查询缓存
+type MGetter interface {
 	MGet(ctx context.Context, keys []interface{}) MGetResult
 }
 
-// MSeter 批量设置缓存
-type MSeter interface {
+// MSetter 批量设置缓存
+type MSetter interface {
 	MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult
 }
 
@@ -33,8 +33,8 @@ type MHaser interface {
 
 // MCache 缓存-批处理接口
 type MCache interface {
-	MGeter
-	MSeter
+	MGetter
+	MSetter
 	MDeleter
 	MHaser
 }
@@ -151,7 +151,7 @@ func (mr MGetResult) Get(key interface{}) GetResult {
 }
 
 func (m *mCacheBySCache) MGet(ctx context.Context, keys []interface{}) MGetResult {
-	if mg, ok := m.sCache.(MGeter); ok {
+	if mg, ok := m.sCache.(MGetter); ok {
 		return mg.MGet(ctx, keys)
 	}
 	result := make(MGetResult, len(keys))
@@ -180,7 +180,7 @@ func (m *mCacheBySCache) MGet(ctx context.Context, keys []interface{}) MGetResul
 }
 
 func (m *mCacheBySCache) MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult {
-	if mg, ok := m.sCache.(MSeter); ok {
+	if mg, ok := m.sCache.(MSetter); ok {
 		return mg.MSet(ctx, kvs, ttl)
 	}
 	result := make(MSetResult, len(kvs))
