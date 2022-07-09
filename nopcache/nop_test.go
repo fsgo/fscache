@@ -41,7 +41,7 @@ func TestNop(t *testing.T) {
 }
 
 func Test_nopCache_MGet(t *testing.T) {
-	ret := Nop.MGet(context.Background(), []interface{}{"abc", "def"})
+	ret := Nop.MGet(context.Background(), []any{"abc", "def"})
 	if got := ret.Get("abc"); !reflect.DeepEqual(got, internal.GetRetNotExists) {
 		t.Fatalf("not eq")
 	}

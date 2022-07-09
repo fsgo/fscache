@@ -10,16 +10,16 @@
 ```go
 // Cache 缓存API
 type Cache interface {
-    Get(ctx context.Context, key interface{}) GetResult
-    Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) SetResult
-    Has(ctx context.Context, key interface{}) HasResult
-    Delete(ctx context.Context, key interface{}) DeleteResult
+    Get(ctx context.Context, key any) GetResult
+    Set(ctx context.Context, key any, value any, ttl time.Duration) SetResult
+    Has(ctx context.Context, key any) HasResult
+    Delete(ctx context.Context, key any) DeleteResult
     
     // 以下为批处理接口
-    MGet(ctx context.Context, keys []interface{}) MGetResult
+    MGet(ctx context.Context, keys []any) MGetResult
     MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult
-    MDelete(ctx context.Context, keys []interface{}) MDeleteResult
-    MHas(ctx context.Context, keys []interface{}) MHasResult
+    MDelete(ctx context.Context, keys []any) MDeleteResult
+    MHas(ctx context.Context, keys []any) MHasResult
 }
 ```
 注：为了将批请求结果和单个处理结果尽量保持一致，操作结果均返回一个值。可以使用对应的`Err()`方法来判断是否有异常

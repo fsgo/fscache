@@ -31,13 +31,13 @@ func NewSCache(opt OptionType) (fscache.SCache, error) {
 // SCache lru普通缓存
 type SCache struct {
 	opt  OptionType
-	data map[interface{}]*list.Element
+	data map[any]*list.Element
 	list *list.List
 	lock sync.Mutex
 }
 
 // Get 读取
-func (L *SCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
+func (L *SCache) Get(ctx context.Context, key any) fscache.GetResult {
 	L.lock.Lock()
 	defer L.lock.Unlock()
 	el, has := L.data[key]
@@ -56,7 +56,7 @@ func (L *SCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
 }
 
 // Set 设置
-func (L *SCache) Set(ctx context.Context, key interface{}, val interface{}, ttl time.Duration) fscache.SetResult {
+func (L *SCache) Set(ctx context.Context, key any, val any, ttl time.Duration) fscache.SetResult {
 	cacheVal := &value{
 		Key:      key,
 		Data:     val,
@@ -89,7 +89,7 @@ func (L *SCache) weedOut() {
 }
 
 // Has 判断是否存在
-func (L *SCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
+func (L *SCache) Has(ctx context.Context, key any) fscache.HasResult {
 	L.lock.Lock()
 	el, has := L.data[key]
 	L.lock.Unlock()
@@ -112,7 +112,7 @@ func (L *SCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
 }
 
 // Delete 删除
-func (L *SCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResult {
+func (L *SCache) Delete(ctx context.Context, key any) fscache.DeleteResult {
 	L.lock.Lock()
 	defer L.lock.Unlock()
 	el, has := L.data[key]
@@ -127,7 +127,7 @@ func (L *SCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResu
 // Reset 重置、清空所有缓存
 func (L *SCache) Reset(ctx context.Context) error {
 	L.lock.Lock()
-	L.data = make(map[interface{}]*list.Element, L.opt.GetCapacity())
+	L.data = make(map[any]*list.Element, L.opt.GetCapacity())
 	L.list = list.New()
 	L.lock.Unlock()
 	return nil
@@ -135,8 +135,8 @@ func (L *SCache) Reset(ctx context.Context) error {
 
 var _ fscache.SCache = (*SCache)(nil)
 
-func newUnmarshaler(val interface{}) fscache.Unmarshaler {
-	return func(_ []byte, obj interface{}) (err error) {
+func newUnmarshaler(val any) fscache.Unmarshaler {
+	return func(_ []byte, obj any) (err error) {
 		defer func() {
 			if re := recover(); re != nil {
 				err = fmt.Errorf("panic:%v", re)

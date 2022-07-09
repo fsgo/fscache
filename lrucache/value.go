@@ -9,8 +9,8 @@ import (
 )
 
 type value struct {
-	Key      interface{}
-	Data     interface{}
+	Key      any
+	Data     any
 	ExpireAt time.Time
 }
 

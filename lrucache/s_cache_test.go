@@ -11,13 +11,13 @@ import (
 
 func Test_newUnmarshaler(t *testing.T) {
 	type args struct {
-		val interface{}
+		val any
 	}
 	tests := []struct {
 		name    string
 		args    args
-		got     interface{}
-		want    interface{}
+		got     any
+		want    any
 		wantErr bool
 	}{
 		{
