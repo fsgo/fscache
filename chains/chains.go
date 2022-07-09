@@ -35,73 +35,53 @@ type Cache struct {
 	SetTTLFn SetTTLFn
 }
 
-type chanCtxKey uint8
-
-const (
-	chanCtxKeyGet chanCtxKey = iota
-)
-
-// WithValueFunc 给 context 中补充 生成空 value 的方法
-//
-// 当 Get 方法，从更低级的缓存中读取出来后，使用这个值解析，然后写入到更高一级的缓存中去
-func WithValueFunc(ctx context.Context, fn func() any) context.Context {
-	return context.WithValue(ctx, chanCtxKeyGet, fn)
+func (c *Cache) getTTL(ttl time.Duration) time.Duration {
+	if c.SetTTLFn == nil {
+		return ttl
+	}
+	return c.SetTTLFn(ttl)
 }
 
 func (c *sChains) Get(ctx context.Context, key any) (result fscache.GetResult) {
-	var index int
-	for i, subCache := range c.caches {
+	for i := 0; i < len(c.caches); i++ {
+		subCache := c.caches[i]
 		if result = subCache.Cache.Get(ctx, key); result.Has() {
-			index = i
 			break
 		}
 	}
+	// todo 将从后面cache 查询的结果赋值到前面的 cache 中
+	return result
+}
 
-	if index == 0 {
-		return result
+func (c *sChains) Set(ctx context.Context, key any, value any, ttl time.Duration) (result fscache.SetResult) {
+	for i := 0; i < len(c.caches); i++ {
+		subCache := c.caches[i]
+		result = subCache.Cache.Set(ctx, key, value, subCache.getTTL(ttl))
 	}
+	return result
+}
 
-	vk := ctx.Value(chanCtxKeyGet)
-
-	if vk != nil {
-		vkv := vk.(func() any)()
-		if _, err := result.Value(&vkv); err != nil {
+func (c *sChains) Has(ctx context.Context, key any) (result fscache.HasResult) {
+	for i := 0; i < len(c.caches); i++ {
+		result = c.caches[i].Cache.Has(ctx, key)
+		if result.Has() {
 			return result
-		}
-		for i := 0; i < index; i++ {
-			subCache := c.caches[i].Cache
-			ttlFn := c.caches[i].SetTTLFn
-			subCache.Set(ctx, key, vkv, ttlFn(0))
 		}
 	}
 	return result
 }
 
-func (c *sChains) Set(ctx context.Context, key any, value any, ttl time.Duration) (result fscache.SetResult) {
-	for _, subCache := range c.caches {
-		result = subCache.Cache.Set(ctx, key, value, subCache.SetTTLFn(ttl))
-	}
-	return
-}
-
-func (c *sChains) Has(ctx context.Context, key any) (result fscache.HasResult) {
-	for _, subCache := range c.caches {
-		if result = subCache.Cache.Has(ctx, key); result.Has() {
-			return
-		}
-	}
-	return
-}
-
 func (c *sChains) Delete(ctx context.Context, key any) (result fscache.DeleteResult) {
-	for _, subCache := range c.caches {
+	for i := 0; i < len(c.caches); i++ {
+		subCache := c.caches[i]
 		result = subCache.Cache.Delete(ctx, key)
 	}
 	return
 }
 
 func (c *sChains) Reset(ctx context.Context) (err error) {
-	for _, subCache := range c.caches {
+	for i := 0; i < len(c.caches); i++ {
+		subCache := c.caches[i]
 		if sc, ok := subCache.Cache.(fscache.Reseter); ok {
 			if e := sc.Reset(ctx); e != nil {
 				err = e
