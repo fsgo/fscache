@@ -15,7 +15,7 @@ import (
 )
 
 func TestMapCache(t *testing.T) {
-	newFunc := func(ctx context.Context, key interface{}) (interface{}, error) {
+	newFunc := func(ctx context.Context, key any) (any, error) {
 		id := key.(int)
 		if id == 1000 {
 			return 0, fmt.Errorf("invalid id")
@@ -74,7 +74,7 @@ func BenchmarkMapCache(b *testing.B) {
 			}
 			return id + 10, nil
 		},
-		Caption: 200,
+		Caption: 1000,
 		FailTTL: time.Minute,
 	}
 	for i := 0; i < b.N; i++ {

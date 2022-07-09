@@ -13,10 +13,10 @@ import (
 
 // SCache 普通的单个缓存
 type SCache interface {
-	Get(ctx context.Context, key interface{}) GetResult
-	Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) SetResult
-	Has(ctx context.Context, key interface{}) HasResult
-	Delete(ctx context.Context, key interface{}) DeleteResult
+	Get(ctx context.Context, key any) GetResult
+	Set(ctx context.Context, key any, value any, ttl time.Duration) SetResult
+	Has(ctx context.Context, key any) HasResult
+	Delete(ctx context.Context, key any) DeleteResult
 }
 
 // Reseter 重置缓存
@@ -25,10 +25,10 @@ type Reseter interface {
 }
 
 // Unmarshaler 数据反序列化方法
-type Unmarshaler func(bf []byte, obj interface{}) error
+type Unmarshaler func(bf []byte, obj any) error
 
 // Marshaler 数据序列化方法
-type Marshaler func(obj interface{}) ([]byte, error)
+type Marshaler func(obj any) ([]byte, error)
 
 // ResultError 所有结果都包含的错误信息
 type ResultError interface {
@@ -57,7 +57,7 @@ type GetResult interface {
 	ResultError
 
 	// Value 获取缓存的值
-	Value(obj interface{}) (has bool, err error)
+	Value(obj any) (has bool, err error)
 
 	// Has 是否有值
 	Has() bool
@@ -89,7 +89,7 @@ func (g *getResult) String() string {
 	return fmt.Sprintf("err=%v; val=%q; unmarshaler=%v", g.err, g.val, g.unmarshaler)
 }
 
-func (g *getResult) Value(obj interface{}) (has bool, err error) {
+func (g *getResult) Value(obj any) (has bool, err error) {
 	if g.err == ErrNotExists {
 		return false, nil
 	}

@@ -12,9 +12,8 @@ import (
 )
 
 // MapCache 一个简单的，使用 sync.Map 作为存储的缓存
-// 使用这个是期望所有的 key 都会进行存储
 type MapCache struct {
-	// New 创建新值的函数
+	// New 创建新值的函数,
 	New func(ctx context.Context, key any) (any, error)
 
 	// TTL 缓存有效期，当为 0 时，默认值为 1 分钟
@@ -87,7 +86,7 @@ func (mc *MapCache) store(key any, nv any, err error, ttl time.Duration) {
 }
 
 func (mc *MapCache) clear(notKey any, needDel int) {
-	delKeys := make([]interface{}, 0, 5)
+	delKeys := make([]any, 0, 5)
 	var loop int
 	mc.values.Range(func(k, v any) bool {
 		if k == notKey {

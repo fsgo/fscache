@@ -44,11 +44,11 @@ const (
 // WithValueFunc 给 context 中补充 生成空 value 的方法
 //
 // 当 Get 方法，从更低级的缓存中读取出来后，使用这个值解析，然后写入到更高一级的缓存中去
-func WithValueFunc(ctx context.Context, fn func() interface{}) context.Context {
+func WithValueFunc(ctx context.Context, fn func() any) context.Context {
 	return context.WithValue(ctx, chanCtxKeyGet, fn)
 }
 
-func (c *sChains) Get(ctx context.Context, key interface{}) (result fscache.GetResult) {
+func (c *sChains) Get(ctx context.Context, key any) (result fscache.GetResult) {
 	var index int
 	for i, subCache := range c.caches {
 		if result = subCache.Cache.Get(ctx, key); result.Has() {
@@ -64,7 +64,7 @@ func (c *sChains) Get(ctx context.Context, key interface{}) (result fscache.GetR
 	vk := ctx.Value(chanCtxKeyGet)
 
 	if vk != nil {
-		vkv := vk.(func() interface{})()
+		vkv := vk.(func() any)()
 		if _, err := result.Value(&vkv); err != nil {
 			return result
 		}
@@ -77,14 +77,14 @@ func (c *sChains) Get(ctx context.Context, key interface{}) (result fscache.GetR
 	return result
 }
 
-func (c *sChains) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) (result fscache.SetResult) {
+func (c *sChains) Set(ctx context.Context, key any, value any, ttl time.Duration) (result fscache.SetResult) {
 	for _, subCache := range c.caches {
 		result = subCache.Cache.Set(ctx, key, value, subCache.SetTTLFn(ttl))
 	}
 	return
 }
 
-func (c *sChains) Has(ctx context.Context, key interface{}) (result fscache.HasResult) {
+func (c *sChains) Has(ctx context.Context, key any) (result fscache.HasResult) {
 	for _, subCache := range c.caches {
 		if result = subCache.Cache.Has(ctx, key); result.Has() {
 			return
@@ -93,7 +93,7 @@ func (c *sChains) Has(ctx context.Context, key interface{}) (result fscache.HasR
 	return
 }
 
-func (c *sChains) Delete(ctx context.Context, key interface{}) (result fscache.DeleteResult) {
+func (c *sChains) Delete(ctx context.Context, key any) (result fscache.DeleteResult) {
 	for _, subCache := range c.caches {
 		result = subCache.Cache.Delete(ctx, key)
 	}

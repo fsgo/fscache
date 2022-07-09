@@ -42,7 +42,7 @@ type SCache struct {
 }
 
 // Get 获取
-func (f *SCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
+func (f *SCache) Get(ctx context.Context, key any) fscache.GetResult {
 	defer f.autoGC()
 
 	expire, data, err := f.readByKey(key, true)
@@ -57,7 +57,7 @@ func (f *SCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
 }
 
 // Set 写入
-func (f *SCache) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) fscache.SetResult {
+func (f *SCache) Set(ctx context.Context, key any, value any, ttl time.Duration) fscache.SetResult {
 	defer f.autoGC()
 
 	fp := f.opt.CachePath(key)
@@ -120,7 +120,7 @@ func (f *SCache) Set(ctx context.Context, key interface{}, value interface{}, tt
 	return internal.SetRetSuc
 }
 
-func (f *SCache) readByKey(key interface{}, needData bool) (expire bool, data []byte, err error) {
+func (f *SCache) readByKey(key any, needData bool) (expire bool, data []byte, err error) {
 	fp := f.opt.CachePath(key)
 	return f.readByPath(fp, needData)
 }
@@ -156,7 +156,7 @@ func (f *SCache) readByPath(fp string, needData bool) (expire bool, data []byte,
 }
 
 // Has 判断是否存在
-func (f *SCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
+func (f *SCache) Has(ctx context.Context, key any) fscache.HasResult {
 	defer f.autoGC()
 
 	expire, _, err := f.readByKey(key, false)
@@ -170,12 +170,12 @@ func (f *SCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
 }
 
 // Delete 删除
-func (f *SCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResult {
+func (f *SCache) Delete(ctx context.Context, key any) fscache.DeleteResult {
 	num, err := f.delete(ctx, key)
 	return fscache.NewDeleteResult(err, num)
 }
 
-func (f *SCache) delete(ctx context.Context, key interface{}) (int, error) {
+func (f *SCache) delete(ctx context.Context, key any) (int, error) {
 	fp := f.opt.CachePath(key)
 	return unlink(fp)
 }

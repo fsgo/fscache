@@ -25,27 +25,27 @@ func NewTemplate(sCache SCache, concurrent bool) Cache {
 }
 
 // Get 读取
-func (c *Template) Get(ctx context.Context, key interface{}) GetResult {
+func (c *Template) Get(ctx context.Context, key any) GetResult {
 	return c.SCache.Get(ctx, key)
 }
 
 // Set 写入
-func (c *Template) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) SetResult {
+func (c *Template) Set(ctx context.Context, key any, value any, ttl time.Duration) SetResult {
 	return c.SCache.Set(ctx, key, value, ttl)
 }
 
 // Has 是否存在
-func (c *Template) Has(ctx context.Context, key interface{}) HasResult {
+func (c *Template) Has(ctx context.Context, key any) HasResult {
 	return c.SCache.Has(ctx, key)
 }
 
 // Delete  删除
-func (c *Template) Delete(ctx context.Context, key interface{}) DeleteResult {
+func (c *Template) Delete(ctx context.Context, key any) DeleteResult {
 	return c.SCache.Delete(ctx, key)
 }
 
 // MGet 批量获取
-func (c *Template) MGet(ctx context.Context, keys []interface{}) MGetResult {
+func (c *Template) MGet(ctx context.Context, keys []any) MGetResult {
 	return c.MCache.MGet(ctx, keys)
 }
 
@@ -55,12 +55,12 @@ func (c *Template) MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSet
 }
 
 // MDelete 批量删除
-func (c Template) MDelete(ctx context.Context, keys []interface{}) MDeleteResult {
+func (c Template) MDelete(ctx context.Context, keys []any) MDeleteResult {
 	return c.MCache.MDelete(ctx, keys)
 }
 
 // MHas 批量判断是否存在
-func (c *Template) MHas(ctx context.Context, keys []interface{}) MHasResult {
+func (c *Template) MHas(ctx context.Context, keys []any) MHasResult {
 	return c.MCache.MHas(ctx, keys)
 }
 

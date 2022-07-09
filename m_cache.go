@@ -13,7 +13,7 @@ import (
 
 // MGetter 批量查询缓存
 type MGetter interface {
-	MGet(ctx context.Context, keys []interface{}) MGetResult
+	MGet(ctx context.Context, keys []any) MGetResult
 }
 
 // MSetter 批量设置缓存
@@ -23,12 +23,12 @@ type MSetter interface {
 
 // MDeleter 批量删除缓存
 type MDeleter interface {
-	MDelete(ctx context.Context, keys []interface{}) MDeleteResult
+	MDelete(ctx context.Context, keys []any) MDeleteResult
 }
 
 // MHaser 批量判断是否存在
 type MHaser interface {
-	MHas(ctx context.Context, keys []interface{}) MHasResult
+	MHas(ctx context.Context, keys []any) MHasResult
 }
 
 // MCache 缓存-批处理接口
@@ -40,10 +40,10 @@ type MCache interface {
 }
 
 // KVData  k-v pairs
-type KVData map[interface{}]interface{}
+type KVData map[any]any
 
 // MSetResult 批量设置 MSet 接口的结果
-type MSetResult map[interface{}]SetResult
+type MSetResult map[any]SetResult
 
 // Err 是否有异常
 func (mr MSetResult) Err() error {
@@ -56,7 +56,7 @@ func (mr MSetResult) Err() error {
 }
 
 // Get 读取 key 的结果
-func (mr MSetResult) Get(key interface{}) SetResult {
+func (mr MSetResult) Get(key any) SetResult {
 	if val, has := mr[key]; has {
 		return val
 	}
@@ -64,7 +64,7 @@ func (mr MSetResult) Get(key interface{}) SetResult {
 }
 
 // MDeleteResult 批量删除 MDelete 接口的结果
-type MDeleteResult map[interface{}]DeleteResult
+type MDeleteResult map[any]DeleteResult
 
 // Err 是否有异常
 func (md MDeleteResult) Err() error {
@@ -86,7 +86,7 @@ func (md MDeleteResult) Deleted() int {
 }
 
 // Get 获取对应key的信息
-func (md MDeleteResult) Get(key interface{}) DeleteResult {
+func (md MDeleteResult) Get(key any) DeleteResult {
 	if val, has := md[key]; has {
 		return val
 	}
@@ -94,7 +94,7 @@ func (md MDeleteResult) Get(key interface{}) DeleteResult {
 }
 
 // MHasResult 批量判断是否存在 MHas 接口的结果
-type MHasResult map[interface{}]HasResult
+type MHasResult map[any]HasResult
 
 // Err 是否有异常
 func (mh MHasResult) Err() error {
@@ -107,7 +107,7 @@ func (mh MHasResult) Err() error {
 }
 
 // Get 读取 key 的结果
-func (mh MHasResult) Get(key interface{}) HasResult {
+func (mh MHasResult) Get(key any) HasResult {
 	if val, has := mh[key]; has {
 		return val
 	}
@@ -130,7 +130,7 @@ type mCacheBySCache struct {
 
 // MGetResult 批量查询 MGet 接口的结果
 // 若key不存在，是不存在
-type MGetResult map[interface{}]GetResult
+type MGetResult map[any]GetResult
 
 // Err 是否有异常
 func (mr MGetResult) Err() error {
@@ -143,14 +143,14 @@ func (mr MGetResult) Err() error {
 }
 
 // Get 读取 key 的结果
-func (mr MGetResult) Get(key interface{}) GetResult {
+func (mr MGetResult) Get(key any) GetResult {
 	if val, has := mr[key]; has {
 		return val
 	}
 	return getRetNotExists
 }
 
-func (m *mCacheBySCache) MGet(ctx context.Context, keys []interface{}) MGetResult {
+func (m *mCacheBySCache) MGet(ctx context.Context, keys []any) MGetResult {
 	if mg, ok := m.sCache.(MGetter); ok {
 		return mg.MGet(ctx, keys)
 	}
@@ -210,7 +210,7 @@ func (m *mCacheBySCache) MSet(ctx context.Context, kvs KVData, ttl time.Duration
 	return result
 }
 
-func (m *mCacheBySCache) MDelete(ctx context.Context, keys []interface{}) MDeleteResult {
+func (m *mCacheBySCache) MDelete(ctx context.Context, keys []any) MDeleteResult {
 	if mg, ok := m.sCache.(MDeleter); ok {
 		return mg.MDelete(ctx, keys)
 	}
@@ -239,7 +239,7 @@ func (m *mCacheBySCache) MDelete(ctx context.Context, keys []interface{}) MDelet
 	return result
 }
 
-func (m *mCacheBySCache) MHas(ctx context.Context, keys []interface{}) MHasResult {
+func (m *mCacheBySCache) MHas(ctx context.Context, keys []any) MHasResult {
 	if mg, ok := m.sCache.(MHaser); ok {
 		return mg.MHas(ctx, keys)
 	}

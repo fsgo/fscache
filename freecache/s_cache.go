@@ -33,7 +33,7 @@ type sCache struct {
 	cache *freecache.Cache
 }
 
-func (s *sCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
+func (s *sCache) Get(ctx context.Context, key any) fscache.GetResult {
 	kb, err := s.opt.Marshaler()(key)
 	if err != nil {
 		return fscache.NewGetResult(nil, err, nil)
@@ -48,7 +48,7 @@ func (s *sCache) Get(ctx context.Context, key interface{}) fscache.GetResult {
 	return fscache.NewGetResult(vb, nil, s.opt.Unmarshaler())
 }
 
-func (s *sCache) Set(ctx context.Context, key interface{}, value interface{}, ttl time.Duration) fscache.SetResult {
+func (s *sCache) Set(ctx context.Context, key any, value any, ttl time.Duration) fscache.SetResult {
 	kb, err := s.opt.Marshaler()(key)
 	if err != nil {
 		return fscache.NewSetResult(fmt.Errorf("encode key with error:%w", err))
@@ -61,7 +61,7 @@ func (s *sCache) Set(ctx context.Context, key interface{}, value interface{}, tt
 	return fscache.NewSetResult(errSet)
 }
 
-func (s *sCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
+func (s *sCache) Has(ctx context.Context, key any) fscache.HasResult {
 	kb, err := s.opt.Marshaler()(key)
 	if err != nil {
 		return fscache.NewHasResult(fmt.Errorf("encode key with error:%w", err), false)
@@ -76,7 +76,7 @@ func (s *sCache) Has(ctx context.Context, key interface{}) fscache.HasResult {
 	}
 }
 
-func (s *sCache) Delete(ctx context.Context, key interface{}) fscache.DeleteResult {
+func (s *sCache) Delete(ctx context.Context, key any) fscache.DeleteResult {
 	kb, err := s.opt.Marshaler()(key)
 	if err != nil {
 		return fscache.NewDeleteResult(fmt.Errorf("encode key with error:%w", err), 0)

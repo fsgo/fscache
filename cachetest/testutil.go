@@ -21,7 +21,7 @@ func CacheTest(t *testing.T, c fscache.Cache, prefix string) {
 
 // SCacheTest 测试SCache
 func SCacheTest(t *testing.T, c fscache.SCache, prefix string) {
-	kv := map[interface{}]interface{}{
+	kv := map[any]any{
 		123:   234,
 		234:   456,
 		"789": 789,
@@ -125,12 +125,12 @@ func SCacheTest(t *testing.T, c fscache.SCache, prefix string) {
 
 // MCacheTest 测试MCache
 func MCacheTest(t *testing.T, c fscache.MCache, prefix string) {
-	kv := map[interface{}]interface{}{
+	kv := map[any]any{
 		12345:    234,
 		23456:    456,
 		"789000": 789,
 	}
-	var keys []interface{}
+	var keys []any
 
 	for k := range kv {
 		keys = append(keys, k)

@@ -26,7 +26,7 @@ type OptionType interface {
 	CacheDir() string
 
 	// CachePath 缓存文件路径
-	CachePath(key interface{}) string
+	CachePath(key any) string
 
 	// GetGCInterval 过期清理的间隔
 	GetGCInterval() time.Duration
@@ -58,7 +58,7 @@ func (o *Option) CacheDir() string {
 }
 
 // CachePath 获取缓存文件地址
-func (o *Option) CachePath(key interface{}) string {
+func (o *Option) CachePath(key any) string {
 	h := md5.New()
 	h.Write([]byte(fmt.Sprint(key)))
 	s := hex.EncodeToString(h.Sum(nil))
