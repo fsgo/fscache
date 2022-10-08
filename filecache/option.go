@@ -34,14 +34,14 @@ type OptionType interface {
 
 // Option 配置选型
 type Option struct {
+	fscache.Option
+
 	// Dir 缓存文件存储目录
 	Dir string
 
 	// GCInterval 触发过期缓存清理的间隔时间
 	// 若为 0，会使用默认值 300秒
 	GCInterval time.Duration
-
-	fscache.Option
 }
 
 // GetGCInterval 获取自动gc的最小间隔

@@ -212,8 +212,8 @@ func (f *SCache) autoGC() {
 		}()
 		f.gc()
 	}()
-
 }
+
 func (f *SCache) gc() {
 	if atomic.LoadInt32(&f.gcRunning) == 1 {
 		return

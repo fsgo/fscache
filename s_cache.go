@@ -67,8 +67,8 @@ var getRetNotExists = NewGetResult(nil, ErrNotExists, nil)
 
 type getResult struct {
 	err         error
-	val         []byte
 	unmarshaler Unmarshaler
+	val         []byte
 }
 
 func (g *getResult) Has() bool {

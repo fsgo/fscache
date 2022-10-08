@@ -16,6 +16,8 @@ type MapCache struct {
 	// New 创建新值的函数,
 	New func(ctx context.Context, key any) (any, error)
 
+	values sync.Map
+
 	// TTL 缓存有效期，当为 0 时，默认值为 1 分钟
 	TTL time.Duration
 
@@ -27,8 +29,6 @@ type MapCache struct {
 	Caption int64
 
 	count int64
-
-	values sync.Map
 }
 
 func (mc *MapCache) getCaption() int64 {
@@ -130,10 +130,10 @@ func (mc *MapCache) Delete(key any) int {
 }
 
 type value struct {
-	index   int
+	expired time.Time
 	payload any
 	err     error
-	expired time.Time
+	index   int
 }
 
 func (v *value) IsOK() bool {

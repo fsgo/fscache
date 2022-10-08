@@ -17,10 +17,11 @@ type OptionType interface {
 
 // Option 配置
 type Option struct {
+	fscache.Option
+
 	// MemSize 内存大小，最小值 512 * 1024
 	// 若为 0，使用默认值 8*1024*1024
 	MemSize int
-	fscache.Option
 }
 
 const defaultSize = 8 * 1024 * 1024

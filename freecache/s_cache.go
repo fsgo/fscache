@@ -85,7 +85,6 @@ func (s *sCache) Delete(ctx context.Context, key any) fscache.DeleteResult {
 		return internal.DeleteRetSucHas1
 	}
 	return internal.DeleteRetSucHas0
-
 }
 
 func (s *sCache) Reset(ctx context.Context) error {
