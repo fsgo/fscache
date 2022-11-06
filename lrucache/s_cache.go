@@ -17,7 +17,7 @@ import (
 )
 
 // NewSCache 创建普通(非批量)
-func NewSCache(opt OptionType) (fscache.SCache, error) {
+func NewSCache(opt *Option) (fscache.SCache, error) {
 	if err := opt.Check(); err != nil {
 		return nil, err
 	}
@@ -28,9 +28,9 @@ func NewSCache(opt OptionType) (fscache.SCache, error) {
 	return sc, nil
 }
 
-// SCache lru普通缓存
+// SCache lru 普通缓存
 type SCache struct {
-	opt  OptionType
+	opt  *Option
 	data map[any]*list.Element
 	list *list.List
 	lock sync.Mutex
@@ -42,17 +42,21 @@ func (L *SCache) Get(ctx context.Context, key any) fscache.GetResult {
 	defer L.lock.Unlock()
 	el, has := L.data[key]
 	if !has {
-		return fscache.NewGetResult([]byte("err1-"+fmt.Sprint(key)), fscache.ErrNotExists, nil)
+		return fscache.GetResult{
+			Err: fscache.ErrNotExists,
+		}
 	}
 	val := el.Value.(*value)
 
 	if val.Expired() {
 		L.list.Remove(el)
 		delete(L.data, key)
-		return fscache.NewGetResult([]byte("err2"), fscache.ErrNotExists, nil)
+		return fscache.GetResult{Err: fscache.ErrNotExists}
 	}
 	L.list.MoveToFront(el)
-	return fscache.NewGetResult(nil, nil, newUnmarshaler(val.Data))
+	return fscache.GetResult{
+		UnmarshalFunc: newUnmarshaler(val.Data),
+	}
 }
 
 // Set 设置
@@ -135,7 +139,7 @@ func (L *SCache) Reset(ctx context.Context) error {
 
 var _ fscache.SCache = (*SCache)(nil)
 
-func newUnmarshaler(val any) fscache.Unmarshaler {
+func newUnmarshaler(val any) fscache.UnmarshalFunc {
 	return func(_ []byte, obj any) (err error) {
 		defer func() {
 			if re := recover(); re != nil {

@@ -8,12 +8,6 @@ import (
 	"fmt"
 )
 
-// OptionType LRU缓存的配置接口定义
-type OptionType interface {
-	Check() error
-	GetCapacity() int
-}
-
 // Option LRU缓存的配置
 type Option struct {
 	Capacity int
@@ -31,5 +25,3 @@ func (o *Option) Check() error {
 func (o *Option) GetCapacity() int {
 	return o.Capacity
 }
-
-var _ OptionType = (*Option)(nil)

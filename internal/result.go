@@ -9,19 +9,19 @@ import (
 )
 
 // GetRetNotExists get key 不存在
-var GetRetNotExists = fscache.NewGetResult(nil, fscache.ErrNotExists, nil)
+var GetRetNotExists = fscache.GetResult{Err: fscache.ErrNotExists}
 
 // SetRetSuc set 成功
-var SetRetSuc = fscache.NewSetResult(nil)
+var SetRetSuc = fscache.SetResult{}
 
 // DeleteRetSucHas0 delete 成功，删除0条
-var DeleteRetSucHas0 = fscache.NewDeleteResult(nil, 0)
+var DeleteRetSucHas0 = fscache.DeleteResult{}
 
 // DeleteRetSucHas1 delete 成功，删除1条
-var DeleteRetSucHas1 = fscache.NewDeleteResult(nil, 1)
+var DeleteRetSucHas1 = fscache.DeleteResult{Deleted: 1}
 
 // HasRetNot Has 成功判断，不存在
-var HasRetNot = fscache.NewHasResult(fscache.ErrNotExists, false)
+var HasRetNot = fscache.HasResult{Err: fscache.ErrNotExists}
 
 // HasRetYes Has 成功判断，存在
-var HasRetYes = fscache.NewHasResult(nil, true)
+var HasRetYes = fscache.HasResult{Has: true}

@@ -13,7 +13,7 @@ import (
 
 // MapCache 一个简单的，使用 sync.Map 作为存储的缓存
 type MapCache struct {
-	// New 创建新值的函数,
+	// New 创建新值的函数
 	New func(ctx context.Context, key any) (any, error)
 
 	values sync.Map
@@ -133,7 +133,6 @@ type value struct {
 	expired time.Time
 	payload any
 	err     error
-	index   int
 }
 
 func (v *value) IsOK() bool {

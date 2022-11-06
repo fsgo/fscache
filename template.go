@@ -6,7 +6,7 @@ package fscache
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 )
 
@@ -17,60 +17,60 @@ type Template struct {
 }
 
 // NewTemplate 利用一个简单的缓存类，创建一个包含批量接口的缓存类
-func NewTemplate(sCache SCache, concurrent bool) Cache {
+func NewTemplate(sc SCache, concurrent bool) Cache {
 	return &Template{
-		SCache: sCache,
-		MCache: NewMCacheBySCache(sCache, concurrent),
+		SCache: sc,
+		MCache: NewMCacheBySCache(sc, concurrent),
 	}
 }
 
 // Get 读取
-func (c *Template) Get(ctx context.Context, key any) GetResult {
-	return c.SCache.Get(ctx, key)
+func (ct *Template) Get(ctx context.Context, key any) GetResult {
+	return ct.SCache.Get(ctx, key)
 }
 
 // Set 写入
-func (c *Template) Set(ctx context.Context, key any, value any, ttl time.Duration) SetResult {
-	return c.SCache.Set(ctx, key, value, ttl)
+func (ct *Template) Set(ctx context.Context, key any, value any, ttl time.Duration) SetResult {
+	return ct.SCache.Set(ctx, key, value, ttl)
 }
 
 // Has 是否存在
-func (c *Template) Has(ctx context.Context, key any) HasResult {
-	return c.SCache.Has(ctx, key)
+func (ct *Template) Has(ctx context.Context, key any) HasResult {
+	return ct.SCache.Has(ctx, key)
 }
 
 // Delete  删除
-func (c *Template) Delete(ctx context.Context, key any) DeleteResult {
-	return c.SCache.Delete(ctx, key)
+func (ct *Template) Delete(ctx context.Context, key any) DeleteResult {
+	return ct.SCache.Delete(ctx, key)
 }
 
 // MGet 批量获取
-func (c *Template) MGet(ctx context.Context, keys []any) MGetResult {
-	return c.MCache.MGet(ctx, keys)
+func (ct *Template) MGet(ctx context.Context, keys []any) MGetResult {
+	return ct.MCache.MGet(ctx, keys)
 }
 
 // MSet 批量写入
-func (c *Template) MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult {
-	return c.MCache.MSet(ctx, kvs, ttl)
+func (ct *Template) MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult {
+	return ct.MCache.MSet(ctx, kvs, ttl)
 }
 
 // MDelete 批量删除
-func (c Template) MDelete(ctx context.Context, keys []any) MDeleteResult {
-	return c.MCache.MDelete(ctx, keys)
+func (ct *Template) MDelete(ctx context.Context, keys []any) MDeleteResult {
+	return ct.MCache.MDelete(ctx, keys)
 }
 
 // MHas 批量判断是否存在
-func (c *Template) MHas(ctx context.Context, keys []any) MHasResult {
-	return c.MCache.MHas(ctx, keys)
+func (ct *Template) MHas(ctx context.Context, keys []any) MHasResult {
+	return ct.MCache.MHas(ctx, keys)
 }
 
 // Reset 重置缓存
-func (c *Template) Reset(ctx context.Context) error {
-	if rc, ok := c.SCache.(Reseter); ok {
+func (ct *Template) Reset(ctx context.Context) error {
+	if rc, ok := ct.SCache.(ReSetter); ok {
 		return rc.Reset(ctx)
 	}
-	return fmt.Errorf("not implemented Reseter")
+	return errors.New("not implemented ReSetter")
 }
 
 var _ Cache = (*Template)(nil)
-var _ Reseter = (*Template)(nil)
+var _ ReSetter = (*Template)(nil)

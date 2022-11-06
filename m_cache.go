@@ -11,25 +11,27 @@ import (
 	"time"
 )
 
-// MGetter 批量查询缓存
-type MGetter interface {
-	MGet(ctx context.Context, keys []any) MGetResult
-}
+type (
+	// MGetter 批量查询缓存
+	MGetter interface {
+		MGet(ctx context.Context, keys []any) MGetResult
+	}
 
-// MSetter 批量设置缓存
-type MSetter interface {
-	MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult
-}
+	// MSetter 批量设置缓存
+	MSetter interface {
+		MSet(ctx context.Context, kvs KVData, ttl time.Duration) MSetResult
+	}
 
-// MDeleter 批量删除缓存
-type MDeleter interface {
-	MDelete(ctx context.Context, keys []any) MDeleteResult
-}
+	// MDeleter 批量删除缓存
+	MDeleter interface {
+		MDelete(ctx context.Context, keys []any) MDeleteResult
+	}
 
-// MHaser 批量判断是否存在
-type MHaser interface {
-	MHas(ctx context.Context, keys []any) MHasResult
-}
+	// MHaser 批量判断是否存在
+	MHaser interface {
+		MHas(ctx context.Context, keys []any) MHasResult
+	}
+)
 
 // MCache 缓存-批处理接口
 type MCache interface {
@@ -48,7 +50,7 @@ type MSetResult map[any]SetResult
 // Err 是否有异常
 func (mr MSetResult) Err() error {
 	for _, ret := range mr {
-		if err := ret.Err(); err != nil {
+		if err := ret.Err; err != nil {
 			return err
 		}
 	}
@@ -69,7 +71,7 @@ type MDeleteResult map[any]DeleteResult
 // Err 是否有异常
 func (md MDeleteResult) Err() error {
 	for _, ret := range md {
-		if err := ret.Err(); err != nil {
+		if err := ret.Err; err != nil {
 			return err
 		}
 	}
@@ -80,7 +82,7 @@ func (md MDeleteResult) Err() error {
 func (md MDeleteResult) Deleted() int {
 	var result int
 	for _, ret := range md {
-		result += ret.Deleted()
+		result += ret.Deleted
 	}
 	return result
 }
@@ -99,8 +101,8 @@ type MHasResult map[any]HasResult
 // Err 是否有异常
 func (mh MHasResult) Err() error {
 	for _, ret := range mh {
-		if err := ret.Err(); err != nil {
-			return err
+		if ret.Err != nil {
+			return ret.Err
 		}
 	}
 	return nil
@@ -135,8 +137,8 @@ type MGetResult map[any]GetResult
 // Err 是否有异常
 func (mr MGetResult) Err() error {
 	for _, ret := range mr {
-		if err := ret.Err(); err != nil {
-			return err
+		if ret.Err != nil {
+			return ret.Err
 		}
 	}
 	return nil
@@ -164,7 +166,7 @@ func (m *mCacheBySCache) MGet(ctx context.Context, keys []any) MGetResult {
 			var val GetResult
 			defer func() {
 				if re := recover(); re != nil {
-					val = NewGetResult(nil, fmt.Errorf("panic:%v", re), nil)
+					val = GetResult{Err: fmt.Errorf("panic:%v", re)}
 				}
 				lock.Lock()
 				result[k] = val
@@ -194,7 +196,7 @@ func (m *mCacheBySCache) MSet(ctx context.Context, kvs KVData, ttl time.Duration
 			var val SetResult
 			defer func() {
 				if re := recover(); re != nil {
-					val = NewSetResult(fmt.Errorf("panic:%v", re))
+					val = SetResult{Err: fmt.Errorf("panic:%v", re)}
 				}
 
 				lock.Lock()
@@ -224,7 +226,7 @@ func (m *mCacheBySCache) MDelete(ctx context.Context, keys []any) MDeleteResult 
 			var val DeleteResult
 			defer func() {
 				if re := recover(); re != nil {
-					val = NewDeleteResult(fmt.Errorf("panic:%v", re), 0)
+					val = DeleteResult{Err: fmt.Errorf("panic:%v", re)}
 				}
 				lock.Lock()
 				result[k] = val
@@ -254,7 +256,7 @@ func (m *mCacheBySCache) MHas(ctx context.Context, keys []any) MHasResult {
 			var val HasResult
 			defer func() {
 				if re := recover(); re != nil {
-					val = NewHasResult(fmt.Errorf("panic:%v", re), false)
+					val = HasResult{Err: fmt.Errorf("panic:%v", re)}
 				}
 				lock.Lock()
 				result[k] = val

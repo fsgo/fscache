@@ -1,10 +1,10 @@
 module github.com/fsgo/fscache
 
-go 1.18
+go 1.19
 
 require (
-	github.com/coocood/freecache v1.2.1
-	github.com/stretchr/testify v1.8.0
+	github.com/coocood/freecache v1.2.3
+	github.com/stretchr/testify v1.8.1
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 )
 

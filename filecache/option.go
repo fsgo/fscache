@@ -18,20 +18,6 @@ import (
 
 const cacheFileExt = ".cache"
 
-// OptionType fileCache 选项接口
-type OptionType interface {
-	fscache.OptionType
-
-	// CacheDir 缓存的目录
-	CacheDir() string
-
-	// CachePath 缓存文件路径
-	CachePath(key any) string
-
-	// GetGCInterval 过期清理的间隔
-	GetGCInterval() time.Duration
-}
-
 // Option 配置选型
 type Option struct {
 	fscache.Option
@@ -68,14 +54,8 @@ func (o *Option) CachePath(key any) string {
 
 // Check 检查是否正确
 func (o *Option) Check() error {
-	if err := o.Option.Check(); err != nil {
-		return err
-	}
-
-	if o.Dir == "" {
+	if len(o.Dir) == 0 {
 		return errors.New("cache dir is empty")
 	}
 	return nil
 }
-
-var _ OptionType = (*Option)(nil)

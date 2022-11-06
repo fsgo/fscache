@@ -6,7 +6,7 @@ package mapcache
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"sync"
 	"testing"
 	"time"
@@ -18,7 +18,7 @@ func TestMapCache(t *testing.T) {
 	newFunc := func(ctx context.Context, key any) (any, error) {
 		id := key.(int)
 		if id == 1000 {
-			return 0, fmt.Errorf("invalid id")
+			return 0, errors.New("invalid id")
 		}
 		return id + 10, nil
 	}
@@ -70,7 +70,7 @@ func BenchmarkMapCache(b *testing.B) {
 		New: func(ctx context.Context, key any) (any, error) {
 			id := key.(int)
 			if id == 1000 {
-				return 0, fmt.Errorf("invalid id")
+				return 0, errors.New("invalid id")
 			}
 			return id + 10, nil
 		},

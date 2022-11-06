@@ -6,13 +6,14 @@ package fscache
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestMGetResult_Get(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
 		var mr MGetResult
-		if got := mr.Get("key"); got != getRetNotExists {
-			t.Fatalf("not eq")
-		}
+		got := mr.Get("key")
+		require.Equal(t, getRetNotExists, got)
 	})
 }

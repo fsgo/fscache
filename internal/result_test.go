@@ -6,21 +6,16 @@ package internal
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestResultVars(t *testing.T) {
 	t.Run("GetRetNotExists", func(t *testing.T) {
-		if err := GetRetNotExists.Err(); err != nil {
-			t.Fatalf("got.Err()=%v want=%v", err, nil)
-		}
-		if has := GetRetNotExists.Has(); has {
-			t.Fatalf("expect not")
-		}
+		require.Error(t, GetRetNotExists.Err)
 	})
 
 	t.Run("SetRetSuc", func(t *testing.T) {
-		if got := SetRetSuc.Err(); got != nil {
-			t.Fatalf("got=%v want nil", got)
-		}
+		require.NoError(t, SetRetSuc.Err)
 	})
 }

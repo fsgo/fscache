@@ -8,13 +8,6 @@ import (
 	"github.com/fsgo/fscache"
 )
 
-// OptionType filecache 选项接口
-type OptionType interface {
-	fscache.OptionType
-
-	GetMemSize() int
-}
-
 // Option 配置
 type Option struct {
 	fscache.Option
@@ -33,13 +26,3 @@ func (o *Option) GetMemSize() int {
 	}
 	return o.MemSize
 }
-
-// Check 检查是否正确
-func (o *Option) Check() error {
-	if err := o.Option.Check(); err != nil {
-		return err
-	}
-	return nil
-}
-
-var _ OptionType = (*Option)(nil)

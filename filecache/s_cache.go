@@ -8,8 +8,8 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
@@ -24,21 +24,27 @@ import (
 )
 
 // NewSCache 创建普通的缓存实例
-func NewSCache(opt OptionType) (fscache.SCache, error) {
+func NewSCache(opt *Option) (fscache.SCache, error) {
 	if err := opt.Check(); err != nil {
 		return nil, err
 	}
+	codec := opt.GetCodec()
 	return &SCache{
-		opt: opt,
+		opt:    opt,
+		encode: codec.Marshal,
+		decode: codec.Unmarshal,
 	}, nil
 }
 
 // SCache 普通(非批量)缓存
 type SCache struct {
-	opt    OptionType
+	opt *Option
+
+	decode fscache.UnmarshalFunc
+	encode fscache.MarshalFunc
 	gcTime int64
 
-	gcRunning int32
+	gcRunning atomic.Bool
 }
 
 // Get 获取
@@ -47,13 +53,13 @@ func (f *SCache) Get(ctx context.Context, key any) fscache.GetResult {
 
 	expire, data, err := f.readByKey(key, true)
 	if err != nil {
-		return fscache.NewGetResult(nil, err, nil)
+		return fscache.GetResult{Err: err}
 	}
 	if expire {
 		_, _ = f.delete(ctx, key)
 		return internal.GetRetNotExists
 	}
-	return fscache.NewGetResult(data, nil, f.opt.Unmarshaler())
+	return fscache.GetResult{Payload: data, UnmarshalFunc: f.decode}
 }
 
 // Set 写入
@@ -64,20 +70,20 @@ func (f *SCache) Set(ctx context.Context, key any, value any, ttl time.Duration)
 	dir := filepath.Dir(fp)
 	if !fileExists(dir) {
 		if err := os.MkdirAll(dir, 0755); err != nil {
-			return fscache.NewSetResult(err)
+			return fscache.SetResult{Err: err}
 		}
 	}
 
-	msg, err := f.opt.Marshaler()(value)
+	msg, err := f.encode(value)
 	if err != nil {
-		return fscache.NewSetResult(err)
+		return fscache.SetResult{Err: err}
 	}
 
 	expireAt := timeNow().Add(ttl)
 
-	file, err := ioutil.TempFile(dir, filepath.Base(fp))
+	file, err := os.CreateTemp(dir, filepath.Base(fp))
 	if err != nil {
-		return fscache.NewSetResult(err)
+		return fscache.SetResult{Err: err}
 	}
 
 	defer func() {
@@ -105,17 +111,17 @@ func (f *SCache) Set(ctx context.Context, key any, value any, ttl time.Duration)
 		_, err = writer.Write(msg)
 	}
 	if err != nil {
-		return fscache.NewSetResult(err)
+		return fscache.SetResult{Err: err}
 	}
 
 	if err = writer.Flush(); err != nil {
-		return fscache.NewSetResult(err)
+		return fscache.SetResult{Err: err}
 	}
 	if err = file.Close(); err != nil {
-		return fscache.NewSetResult(err)
+		return fscache.SetResult{Err: err}
 	}
 	if err = os.Rename(file.Name(), fp); err != nil {
-		return fscache.NewSetResult(err)
+		return fscache.SetResult{Err: err}
 	}
 	return internal.SetRetSuc
 }
@@ -136,7 +142,7 @@ func (f *SCache) readByPath(fp string, needData bool) (expire bool, data []byte,
 	}
 	lines := bytes.SplitN(content, []byte("\n"), 3)
 	if len(lines) < 2 {
-		return true, nil, fmt.Errorf("invalid cache file")
+		return true, nil, errors.New("invalid cache file")
 	}
 	// 第一行为过期时间，格式为：etime=UnixNano()
 	first := lines[0]
@@ -161,7 +167,7 @@ func (f *SCache) Has(ctx context.Context, key any) fscache.HasResult {
 
 	expire, _, err := f.readByKey(key, false)
 	if err != nil {
-		return fscache.NewHasResult(err, false)
+		return fscache.HasResult{Err: err}
 	}
 	if !expire {
 		return internal.HasRetYes
@@ -172,7 +178,7 @@ func (f *SCache) Has(ctx context.Context, key any) fscache.HasResult {
 // Delete 删除
 func (f *SCache) Delete(ctx context.Context, key any) fscache.DeleteResult {
 	num, err := f.delete(ctx, key)
-	return fscache.NewDeleteResult(err, num)
+	return fscache.DeleteResult{Deleted: num, Err: err}
 }
 
 func (f *SCache) delete(ctx context.Context, key any) (int, error) {
@@ -215,15 +221,15 @@ func (f *SCache) autoGC() {
 }
 
 func (f *SCache) gc() {
-	if atomic.LoadInt32(&f.gcRunning) == 1 {
+	if !f.gcRunning.CompareAndSwap(false, true) {
 		return
 	}
-	atomic.StoreInt32(&f.gcRunning, 1)
-	defer func() {
-		atomic.StoreInt32(&f.gcRunning, 0)
-	}()
+	defer f.gcRunning.Store(false)
 
 	err := filepath.Walk(f.opt.CacheDir(), func(path string, info os.FileInfo, err error) error {
+		if os.IsNotExist(err) {
+			return nil
+		}
 		if !info.IsDir() {
 			if err1 := f.checkFile(path); err1 != nil {
 				log.Printf("[fileCache][warn] checkFile %q failed, %s\n", path, err1.Error())
@@ -249,7 +255,7 @@ func (f *SCache) checkFile(fp string) error {
 }
 
 var _ fscache.SCache = (*SCache)(nil)
-var _ fscache.Reseter = (*SCache)(nil)
+var _ fscache.ReSetter = (*SCache)(nil)
 
 func init() {
 	rand.Seed(timeNow().UnixNano())

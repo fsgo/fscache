@@ -9,7 +9,7 @@ import (
 )
 
 // New 创建新的lru缓存实例
-func New(opt OptionType) (fscache.Cache, error) {
+func New(opt *Option) (fscache.Cache, error) {
 	sc, err := NewSCache(opt)
 	if err != nil {
 		return nil, err

@@ -45,7 +45,7 @@ func (c *Cache) getTTL(ttl time.Duration) time.Duration {
 func (c *sChains) Get(ctx context.Context, key any) (result fscache.GetResult) {
 	for i := 0; i < len(c.caches); i++ {
 		subCache := c.caches[i]
-		if result = subCache.Cache.Get(ctx, key); result.Has() {
+		if result = subCache.Cache.Get(ctx, key); result.Err == nil {
 			break
 		}
 	}
@@ -64,7 +64,7 @@ func (c *sChains) Set(ctx context.Context, key any, value any, ttl time.Duration
 func (c *sChains) Has(ctx context.Context, key any) (result fscache.HasResult) {
 	for i := 0; i < len(c.caches); i++ {
 		result = c.caches[i].Cache.Has(ctx, key)
-		if result.Has() {
+		if result.Has {
 			return result
 		}
 	}
@@ -82,7 +82,7 @@ func (c *sChains) Delete(ctx context.Context, key any) (result fscache.DeleteRes
 func (c *sChains) Reset(ctx context.Context) (err error) {
 	for i := 0; i < len(c.caches); i++ {
 		subCache := c.caches[i]
-		if sc, ok := subCache.Cache.(fscache.Reseter); ok {
+		if sc, ok := subCache.Cache.(fscache.ReSetter); ok {
 			if e := sc.Reset(ctx); e != nil {
 				err = e
 			}
@@ -92,4 +92,4 @@ func (c *sChains) Reset(ctx context.Context) (err error) {
 }
 
 var _ fscache.SCache = (*sChains)(nil)
-var _ fscache.Reseter = (*sChains)(nil)
+var _ fscache.ReSetter = (*sChains)(nil)

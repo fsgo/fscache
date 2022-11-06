@@ -6,9 +6,10 @@ package nopcache
 
 import (
 	"context"
-	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/fsgo/fscache/internal"
 )
@@ -20,29 +21,22 @@ func TestNop(t *testing.T) {
 
 	t.Run("Get", func(t *testing.T) {
 		got := Nop.Get(ctx, key)
-		if got != internal.GetRetNotExists {
-			t.Fatalf("not eq")
-		}
+		require.Equal(t, internal.GetRetNotExists, got)
 	})
 
 	t.Run("Set", func(t *testing.T) {
 		got := Nop.Set(ctx, key, value, time.Second)
-		if got != internal.SetRetSuc {
-			t.Fatalf("not eq,got=%v want=%v", got, internal.SetRetSuc)
-		}
+		require.Equal(t, internal.SetRetSuc, got)
 	})
 
 	t.Run("Delete", func(t *testing.T) {
 		got := Nop.Delete(ctx, key)
-		if got != internal.DeleteRetSucHas0 {
-			t.Fatalf("not eq,got=%v want=%v", got, internal.DeleteRetSucHas0)
-		}
+		require.Equal(t, internal.DeleteRetSucHas0, got)
 	})
 }
 
 func Test_nopCache_MGet(t *testing.T) {
 	ret := Nop.MGet(context.Background(), []any{"abc", "def"})
-	if got := ret.Get("abc"); !reflect.DeepEqual(got, internal.GetRetNotExists) {
-		t.Fatalf("not eq")
-	}
+	got := ret.Get("abc")
+	require.Equal(t, internal.GetRetNotExists, got)
 }
