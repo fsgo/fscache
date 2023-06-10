@@ -4,8 +4,9 @@
 
 package fscache
 
-// Option 配置选型
+// Option 配置
 type Option struct {
+	// Codec 编解码器，可选，默认为 msgpack
 	Codec Codec
 }
 

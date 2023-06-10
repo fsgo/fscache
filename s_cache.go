@@ -53,10 +53,7 @@ func (g GetResult) Value(obj any) (has bool, err error) {
 	}
 
 	err = g.UnmarshalFunc(g.Payload, obj)
-	if err == nil {
-		return true, nil
-	}
-	return false, err
+	return err == nil, err
 }
 
 // SetResult Set 方法的结果

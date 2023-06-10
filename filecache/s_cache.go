@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -96,12 +95,12 @@ func (f *SCache) Set(ctx context.Context, key any, value any, ttl time.Duration)
 	// 写 cache 文件：
 	writer := bufio.NewWriter(file)
 	err = writeStrings(writer,
-		// 第一行为缓存有效期，格式:etime=1590235951234907000
+		// 第1行是缓存有效期，格式:etime=1590235951234907000
 		"etime=",
 		strconv.FormatInt(expireAt.UnixNano(), 10),
 		"\n",
 
-		// 第二行为创建时间：格式： ctime=1590235951
+		// 第2行是创建时间：格式： ctime=1590235951
 		"ctime=",
 		strconv.FormatInt(timeNow().Unix(), 10),
 		"\n",
@@ -256,10 +255,6 @@ func (f *SCache) checkFile(fp string) error {
 
 var _ fscache.SCache = (*SCache)(nil)
 var _ fscache.ReSetter = (*SCache)(nil)
-
-func init() {
-	rand.Seed(timeNow().UnixNano())
-}
 
 func fileExists(name string) bool {
 	_, err := os.Stat(name)
