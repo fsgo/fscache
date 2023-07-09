@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/coocood/freecache v1.2.3
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.4
 	github.com/vmihailenco/msgpack/v5 v5.3.5
 )
 
