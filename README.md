@@ -2,6 +2,8 @@
 
 统一封装的缓存接口，目前已包含文件缓存(FileCache)、内存LRU缓存。
 
+[![GoDoc](https://pkg.go.dev/badge/github.com/fsgo/fscache)](https://pkg.go.dev/github.com/fsgo/fscache)
+
 ## 1.缓存接口定义
 ```go
 // Cache 缓存API

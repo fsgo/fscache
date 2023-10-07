@@ -10,6 +10,7 @@ import (
 
 // Option LRU缓存的配置
 type Option struct {
+	// Capacity 缓存个数，必填，不得小于 1
 	Capacity int
 }
 

@@ -22,10 +22,10 @@ const cacheFileExt = ".cache"
 type Option struct {
 	fscache.Option
 
-	// Dir 缓存文件存储目录
+	// Dir 缓存文件存储目录，必填
 	Dir string
 
-	// GCInterval 触发过期缓存清理的间隔时间
+	// GCInterval 触发过期缓存清理的间隔时间，可选
 	// 若为 0，会使用默认值 300秒
 	GCInterval time.Duration
 }
