@@ -7,13 +7,13 @@ package fscache
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 )
 
 func TestMGetResult_Get(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
 		var mr MGetResult
 		got := mr.Get("key")
-		require.Equal(t, getRetNotExists, got)
+		fst.Equal(t, getRetNotExists, got)
 	})
 }

@@ -1,6 +1,6 @@
 language: go
 
 go:
-  - "1.19"
+  - "1.21"
 
 script: go get github.com/fsgo/fscache && go test -race -cover ./...

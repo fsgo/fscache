@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 
 	"github.com/fsgo/fscache/cachetest"
 )
@@ -29,7 +29,7 @@ func TestLRUCache2(t *testing.T) {
 
 	for i := 0; i < 12; i++ {
 		ret := sc.Set(context.Background(), i, i, 1*time.Hour)
-		require.NoError(t, ret.Err)
+		fst.NoError(t, ret.Err)
 	}
 }
 
@@ -37,5 +37,5 @@ func TestNewWithError(t *testing.T) {
 	_, err := New(&Option{
 		Capacity: 0,
 	})
-	require.Error(t, err)
+	fst.Error(t, err)
 }

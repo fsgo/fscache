@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 )
 
 func TestMapCache(t *testing.T) {
@@ -36,11 +36,11 @@ func TestMapCache(t *testing.T) {
 		for i := 0; i < 10000; i++ {
 			val, err := mc.Get(i)
 			if i == 1000 {
-				require.Error(t, err)
-				require.Equal(t, 0, val)
+				fst.Error(t, err)
+				fst.Equal(t, 0, val)
 			} else {
-				require.NoError(t, err)
-				require.Equal(t, i+10, val)
+				fst.NoError(t, err)
+				fst.Equal(t, i+10, val.(int))
 			}
 		}
 	}
@@ -51,7 +51,7 @@ func TestMapCache(t *testing.T) {
 			Caption: 100,
 		}
 		check(t, mc)
-		require.LessOrEqual(t, count(&mc.values), 100)
+		fst.LessOrEqual(t, count(&mc.values), 100)
 	})
 
 	t.Run("Has FailTTL", func(t *testing.T) {
@@ -61,7 +61,7 @@ func TestMapCache(t *testing.T) {
 			Caption: 100,
 		}
 		check(t, mc)
-		require.LessOrEqual(t, count(&mc.values), 100)
+		fst.LessOrEqual(t, count(&mc.values), 100)
 	})
 }
 

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 
 	"github.com/fsgo/fscache"
 	"github.com/fsgo/fscache/lrucache"
@@ -34,17 +34,17 @@ func Test_sChains(t *testing.T) {
 	key := "abc"
 	value := "hello"
 	got1 := cc1.Get(ctx, key)
-	require.Error(t, got1.Err)
+	fst.Error(t, got1.Err)
 
 	ret2 := lc2.Set(ctx, key, value, time.Second)
-	require.NoError(t, ret2.Err)
+	fst.NoError(t, ret2.Err)
 
 	checkHas := func(t *testing.T, got fscache.GetResult, want string) {
 		var v2 string
 		has, err := got.Value(&v2)
-		require.True(t, has)
-		require.NoError(t, err)
-		require.Equal(t, want, v2)
+		fst.True(t, has)
+		fst.NoError(t, err)
+		fst.Equal(t, want, v2)
 	}
 
 	checkHas(t, lc2.Get(ctx, key), value)
@@ -52,14 +52,14 @@ func Test_sChains(t *testing.T) {
 	checkHas(t, cc1.Get(ctx, key), value)
 
 	ret3 := cc1.Delete(ctx, key)
-	require.Equal(t, 1, ret3.Deleted)
+	fst.Equal(t, 1, ret3.Deleted)
 
 	key2 := "world"
 	got3 := cc1.Get(ctx, key2)
-	require.Error(t, got3.Err)
+	fst.Error(t, got3.Err)
 
 	ret4 := cc1.Set(ctx, key2, key2, time.Second)
-	require.NoError(t, ret4.Err)
+	fst.NoError(t, ret4.Err)
 
 	checkHas(t, cc1.Get(ctx, key2), key2)
 	checkHas(t, lc1.Get(ctx, key2), key2)

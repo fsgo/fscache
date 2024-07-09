@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 
 	"github.com/fsgo/fscache"
 )
@@ -34,36 +34,36 @@ func SCacheTest(t *testing.T, c fscache.SCache, prefix string) {
 			t.Run("Set", func(t *testing.T) {
 				for i := 0; i < 5; i++ {
 					retSet := c.Set(context.Background(), k, v, 10*time.Second)
-					require.NoError(t, retSet.Err)
+					fst.NoError(t, retSet.Err)
 				}
 			})
 
 			t.Run("Get_has", func(t *testing.T) {
 				retGet := c.Get(context.Background(), k)
-				require.NoError(t, retGet.Err)
+				fst.NoError(t, retGet.Err)
 
 				var num int
 				has, err := retGet.Value(&num)
-				require.NoError(t, err)
-				require.True(t, has)
-				require.Equal(t, v, num)
+				fst.NoError(t, err)
+				fst.True(t, has)
+				fst.Equal[int](t, v.(int), num)
 			})
 
 			t.Run("Get_miss", func(t *testing.T) {
 				keyMiss := fmt.Sprintf("miss_%v", k)
 				retGet := c.Get(context.Background(), keyMiss)
-				require.Equal(t, fscache.ErrNotExists, retGet.Err)
+				fst.Equal(t, fscache.ErrNotExists, retGet.Err)
 
 				var num int
 				has, err := retGet.Value(&num)
-				require.NoError(t, err)
-				require.False(t, has)
+				fst.NoError(t, err)
+				fst.False(t, has)
 			})
 
 			t.Run("Has", func(t *testing.T) {
 				retHas := c.Has(context.Background(), k)
-				require.NoError(t, retHas.Err)
-				require.True(t, retHas.Has)
+				fst.NoError(t, retHas.Err)
+				fst.True(t, retHas.Has)
 			})
 		})
 	}
@@ -75,7 +75,7 @@ func SCacheTest(t *testing.T, c fscache.SCache, prefix string) {
 		// set cache
 		{
 			setRet := c.Set(context.Background(), key1, 0, 1*time.Second)
-			require.NoError(t, setRet.Err)
+			fst.NoError(t, setRet.Err)
 
 			c.Set(context.Background(), key2, 0, 1*time.Second)
 		}
@@ -83,7 +83,7 @@ func SCacheTest(t *testing.T, c fscache.SCache, prefix string) {
 		// check has
 		{
 			getRet := c.Get(context.Background(), key1)
-			require.NoError(t, getRet.Err)
+			fst.NoError(t, getRet.Err)
 
 			var n int
 			if has, _ := getRet.Value(&n); !has {
@@ -105,7 +105,7 @@ func SCacheTest(t *testing.T, c fscache.SCache, prefix string) {
 
 	t.Run("Delete_miss", func(t *testing.T) {
 		delRet := c.Delete(context.Background(), "not_exists")
-		require.NoError(t, delRet.Err)
+		fst.NoError(t, delRet.Err)
 		if num := delRet.Deleted; num != 0 {
 			t.Errorf("Deleted=%d, want=0", num)
 		}
@@ -141,7 +141,7 @@ func MCacheTest(t *testing.T, c fscache.MCache, prefix string) {
 		for k, v := range kv {
 			t.Run(fmt.Sprintf("case key=%v,val=%v", k, v), func(t *testing.T) {
 				ret := retMGet[k]
-				require.NoError(t, ret.Err)
+				fst.NoError(t, ret.Err)
 
 				var num int
 

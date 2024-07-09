@@ -7,15 +7,15 @@ package internal
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/fsgo/fst"
 )
 
 func TestResultVars(t *testing.T) {
 	t.Run("GetRetNotExists", func(t *testing.T) {
-		require.Error(t, GetRetNotExists.Err)
+		fst.Error(t, GetRetNotExists.Err)
 	})
 
 	t.Run("SetRetSuc", func(t *testing.T) {
-		require.NoError(t, SetRetSuc.Err)
+		fst.NoError(t, SetRetSuc.Err)
 	})
 }
