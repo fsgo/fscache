@@ -5,7 +5,7 @@
 package fscache
 
 import (
-	"github.com/vmihailenco/msgpack/v5"
+	"encoding/json"
 )
 
 // Codec 数据编解码器
@@ -25,7 +25,7 @@ type (
 	UnmarshalFunc func(bf []byte, obj any) error
 )
 
-var defaultCodec = NewCodec(msgpack.Marshal, msgpack.Unmarshal)
+var DefaultCodec Codec = NewCodec(json.Marshal, json.Unmarshal)
 
 // NewCodec 创建一个新的编解码器
 func NewCodec(encode MarshalFunc, decode UnmarshalFunc) Codec {

@@ -2,7 +2,7 @@
 // Author: fsgo
 // Date: 2021/8/19
 
-package freecache
+package fsfreecache
 
 import (
 	"testing"

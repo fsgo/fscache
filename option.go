@@ -13,7 +13,7 @@ type Option struct {
 // GetCodec 获取编解码器，若没有设置，会返回默认值(msgpack)
 func (o *Option) GetCodec() Codec {
 	if o == nil || o.Codec == nil {
-		return defaultCodec
+		return DefaultCodec
 	}
 	return o.Codec
 }

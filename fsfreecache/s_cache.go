@@ -2,15 +2,15 @@
 // Author: hidu (duv123+git@baidu.com)
 // Date: 2020/5/30
 
-package freecache
+package fsfreecache
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/coocood/freecache"
-
 	"github.com/fsgo/fscache"
 	"github.com/fsgo/fscache/internal"
 )
@@ -42,7 +42,7 @@ func (s *sCache) Get(ctx context.Context, key any) fscache.GetResult {
 	}
 	vb, err := s.cache.Get(kb)
 	if err != nil {
-		if err == freecache.ErrNotFound {
+		if errors.Is(err, freecache.ErrNotFound) {
 			return internal.GetRetNotExists
 		}
 		return fscache.GetResult{Err: err}
@@ -71,7 +71,7 @@ func (s *sCache) Has(ctx context.Context, key any) fscache.HasResult {
 	_, errGet := s.cache.Get(kb)
 	if errGet == nil {
 		return internal.HasRetYes
-	} else if errGet == freecache.ErrNotFound {
+	} else if errors.Is(errGet, freecache.ErrNotFound) {
 		return internal.HasRetNot
 	} else {
 		return fscache.HasResult{Err: errGet}

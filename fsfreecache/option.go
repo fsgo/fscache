@@ -2,7 +2,7 @@
 // Author: hidu (duv123+git@baidu.com)
 // Date: 2020/5/17
 
-package freecache
+package fsfreecache
 
 import (
 	"github.com/fsgo/fscache"
