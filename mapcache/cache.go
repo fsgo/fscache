@@ -13,22 +13,22 @@ import (
 
 // MapCache 一个简单的，使用 sync.Map 作为存储的缓存
 type MapCache struct {
-	// New 创建新值的函数
+	// New 创建新值的函数,必填
 	New func(ctx context.Context, key any) (any, error)
 
-	values sync.Map
-
-	// TTL 缓存有效期，当为 0 时，默认值为 1 分钟
+	// TTL 缓存有效期，可选，当为 0 时，默认值为 1 分钟
 	TTL time.Duration
 
-	// FailTTL 当 New 方法创建对象失败的时候，缓存的有效期，默认为 0
+	// FailTTL 当 New 方法创建对象失败的时候，可选，缓存的有效期，默认为 0。
+	// > 0 时生效存储 New 失败的 error 信息
 	FailTTL time.Duration
 
-	// Caption 容量，当为 0 是，默认值为 100000
+	// Caption 容量，可选，当为 0时，默认值为 100000
 	// 这个值是一个近似值
 	Caption int64
 
-	count int64
+	count  int64
+	values sync.Map
 }
 
 func (mc *MapCache) getCaption() int64 {

@@ -30,7 +30,7 @@ type Option struct {
 	GCInterval time.Duration
 }
 
-// GetGCInterval 获取自动gc的最小间隔
+// GetGCInterval 获取自动 gc 的最小间隔
 func (o *Option) GetGCInterval() time.Duration {
 	if o.GCInterval == 0 {
 		return 300 * time.Second
